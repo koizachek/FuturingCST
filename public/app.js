@@ -1,0 +1,339 @@
+const form = document.querySelector("#futuring-form");
+const statusEl = document.querySelector("#status");
+const resultPanel = document.querySelector("#result-panel");
+const canvas = document.querySelector("#graph-canvas");
+const ctx = canvas.getContext("2d");
+
+let graph = { nodes: [], edges: [], startedAt: performance.now() };
+let selectedNodeId = null;
+let frameId = null;
+
+const palette = {
+  root: "#f2fff8",
+  factor: "#d8d19b",
+  perspective: "#b8fff2",
+  scenario: "#eef5ef",
+  mission: "#f0ffb0"
+};
+
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+canvas.addEventListener("click", selectNode);
+form.addEventListener("submit", submitForm);
+animate();
+
+async function submitForm(event) {
+  event.preventDefault();
+  const button = form.querySelector("button");
+  button.disabled = true;
+  setStatus("LLM extrapolation running...");
+  resultPanel.innerHTML = "<p class=\"empty-state\">Waiting for structured LLM response.</p>";
+  graph = { nodes: [], edges: [], startedAt: performance.now() };
+
+  const formData = new FormData(form);
+  const payload = Object.fromEntries(formData.entries());
+
+  try {
+    const response = await fetch("/api/extrapolate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Request failed.");
+    }
+
+    graph = buildGraph(data);
+    selectedNodeId = graph.nodes[0]?.id || null;
+    renderResult(data);
+    setStatus(`Generated with ${data.provider} / ${data.model}.`);
+  } catch (error) {
+    setStatus(error.message, true);
+    resultPanel.innerHTML = `<p class="empty-state">${escapeHtml(error.message)}</p>`;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function buildGraph(data) {
+  const width = canvas.clientWidth || 900;
+  const height = canvas.clientHeight || 700;
+  const centerY = height * 0.5;
+  const start = performance.now();
+  const nodes = [];
+  const edges = [];
+
+  const rootId = "root";
+  nodes.push({
+    id: rootId,
+    type: "root",
+    label: data.title,
+    x: width * 0.12,
+    y: centerY,
+    r: 7,
+    appearAt: 0
+  });
+
+  const factors = data.influenceFactors || [];
+  factors.forEach((factor, index) => {
+    const angle = -1.35 + (index / Math.max(1, factors.length - 1)) * 2.7;
+    const id = factor.id || `factor_${index}`;
+    nodes.push({
+      id,
+      type: "factor",
+      label: factor.label,
+      x: width * 0.28 + Math.cos(angle) * 54,
+      y: centerY + Math.sin(angle) * height * 0.32,
+      r: 5,
+      appearAt: 450 + index * 110
+    });
+    edges.push({ from: rootId, to: id, appearAt: 520 + index * 110 });
+  });
+
+  const perspectives = data.perspectives || [];
+  perspectives.forEach((perspective, index) => {
+    const id = perspective.id || `perspective_${index}`;
+    nodes.push({
+      id,
+      type: "perspective",
+      label: perspective.label,
+      x: width * 0.22,
+      y: height * (0.14 + index * 0.14),
+      r: 4,
+      appearAt: 760 + index * 120
+    });
+    edges.push({ from: rootId, to: id, appearAt: 860 + index * 120 });
+  });
+
+  const horizonX = { 2: 0.48, 5: 0.68, 10: 0.88 };
+  const allScenarios = [];
+  (data.horizons || []).forEach((horizon) => {
+    const scenarios = horizon.scenarios || [];
+    scenarios.forEach((scenario, index) => {
+      const id = scenario.id || `scenario_${horizon.years}_${index}`;
+      const yOffset = (index - (scenarios.length - 1) / 2) * height * 0.17;
+      nodes.push({
+        id,
+        type: "scenario",
+        label: `${horizon.years}y / ${scenario.title}`,
+        x: width * (horizonX[horizon.years] || 0.7),
+        y: centerY + yOffset,
+        r: 6,
+        appearAt: 1300 + horizon.years * 160 + index * 150
+      });
+      allScenarios.push({ id, scenario });
+
+      const linkedFactors = scenario.factorIds?.length ? scenario.factorIds : factors.slice(0, 2).map((factor) => factor.id);
+      linkedFactors.forEach((factorId, factorIndex) => {
+        edges.push({
+          from: factorId,
+          to: id,
+          appearAt: 1450 + horizon.years * 160 + index * 150 + factorIndex * 50
+        });
+      });
+
+      (scenario.perspectiveIds || []).slice(0, 2).forEach((perspectiveId, perspectiveIndex) => {
+        edges.push({
+          from: perspectiveId,
+          to: id,
+          appearAt: 1520 + horizon.years * 160 + index * 150 + perspectiveIndex * 70
+        });
+      });
+    });
+  });
+
+  const mission = data.mission || [];
+  mission.forEach((step, index) => {
+    const id = `mission_${index}`;
+    nodes.push({
+      id,
+      type: "mission",
+      label: step.action,
+      x: width * (0.42 + index * 0.07),
+      y: height * 0.86,
+      r: 4,
+      appearAt: 3600 + index * 140
+    });
+    const from = step.fromScenarioId || allScenarios[index % Math.max(1, allScenarios.length)]?.id || rootId;
+    edges.push({ from, to: id, appearAt: 3700 + index * 140 });
+  });
+
+  return { nodes, edges, startedAt: start };
+}
+
+function animate() {
+  frameId = requestAnimationFrame(animate);
+  draw();
+}
+
+function draw() {
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  const now = performance.now();
+  const elapsed = now - graph.startedAt;
+
+  ctx.clearRect(0, 0, width, height);
+  drawField(width, height, now);
+
+  for (const edge of graph.edges) {
+    const age = elapsed - edge.appearAt;
+    if (age <= 0) continue;
+    const from = graph.nodes.find((node) => node.id === edge.from);
+    const to = graph.nodes.find((node) => node.id === edge.to);
+    if (!from || !to) continue;
+    drawEdge(from, to, Math.min(1, age / 900), now);
+  }
+
+  for (const node of graph.nodes) {
+    const age = elapsed - node.appearAt;
+    if (age <= 0) continue;
+    drawNode(node, Math.min(1, age / 520));
+  }
+}
+
+function drawField(width, height, now) {
+  ctx.save();
+  ctx.globalAlpha = 0.4;
+  for (let i = 0; i < 120; i += 1) {
+    const x = ((i * 73 + now * 0.006) % width);
+    const y = ((i * 131 + Math.sin(now * 0.0007 + i) * 28) % height);
+    ctx.fillStyle = i % 7 === 0 ? "rgba(240,255,176,0.42)" : "rgba(230,244,236,0.26)";
+    ctx.fillRect(x, y, 1, 1);
+  }
+  ctx.restore();
+}
+
+function drawEdge(from, to, progress, now) {
+  const endX = from.x + (to.x - from.x) * progress;
+  const endY = from.y + (to.y - from.y) * progress;
+  const dashOffset = (now * 0.04) % 16;
+
+  ctx.save();
+  ctx.setLineDash([2, 8]);
+  ctx.lineDashOffset = -dashOffset;
+  ctx.strokeStyle = "rgba(224, 244, 236, 0.32)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(from.x, from.y);
+  ctx.lineTo(endX, endY);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawNode(node, progress) {
+  const color = palette[node.type] || palette.scenario;
+  const radius = node.r * progress;
+  const selected = node.id === selectedNodeId;
+
+  ctx.save();
+  ctx.globalAlpha = progress;
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = selected ? 18 : 9;
+  ctx.beginPath();
+  ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
+  ctx.fill();
+
+  if (selected || node.type === "root") {
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = color;
+    ctx.strokeRect(node.x + 12, node.y - 13, Math.min(210, 28 + String(node.label || "").length * 6), 23);
+    ctx.fillStyle = "rgba(238, 245, 239, 0.88)";
+    ctx.font = "12px Inter, system-ui, sans-serif";
+    ctx.fillText(truncate(node.label || node.id, 28), node.x + 20, node.y + 3);
+  }
+  ctx.restore();
+}
+
+function selectNode(event) {
+  const rect = canvas.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  let nearest = null;
+  let nearestDistance = 18;
+
+  for (const node of graph.nodes) {
+    const dist = Math.hypot(node.x - x, node.y - y);
+    if (dist < nearestDistance) {
+      nearest = node;
+      nearestDistance = dist;
+    }
+  }
+
+  if (nearest) {
+    selectedNodeId = nearest.id;
+  }
+}
+
+function renderResult(data) {
+  const horizons = (data.horizons || []).map((horizon) => `
+    <div class="result-block">
+      <h2>${horizon.years}-year futures</h2>
+      <ul>
+        ${(horizon.scenarios || []).map((scenario) => `
+          <li><strong>${escapeHtml(scenario.title || "Untitled")}</strong>: ${escapeHtml(scenario.summary || "")}</li>
+        `).join("")}
+      </ul>
+    </div>
+  `).join("");
+
+  resultPanel.innerHTML = `
+    <div class="result-block">
+      <h2>${escapeHtml(data.title)}</h2>
+      <p>${escapeHtml(data.reading)}</p>
+    </div>
+    <div class="result-block">
+      <h2>Influence factors</h2>
+      <div class="chip-row">
+        ${(data.influenceFactors || []).map((factor) => `<span class="chip">${escapeHtml(factor.label || factor.id)}</span>`).join("")}
+      </div>
+    </div>
+    <div class="result-block">
+      <h2>Perspectives</h2>
+      <div class="chip-row">
+        ${(data.perspectives || []).map((perspective) => `<span class="chip">${escapeHtml(perspective.label || perspective.id)}</span>`).join("")}
+      </div>
+    </div>
+    ${horizons}
+    <div class="result-block">
+      <h2>Mission trace</h2>
+      <ul>
+        ${(data.mission || []).map((step) => `<li>${escapeHtml(step.action || "")}</li>`).join("")}
+      </ul>
+    </div>
+  `;
+}
+
+function resizeCanvas() {
+  const ratio = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = Math.max(1, Math.floor(rect.width * ratio));
+  canvas.height = Math.max(1, Math.floor(rect.height * ratio));
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+}
+
+function setStatus(message, isError = false) {
+  statusEl.textContent = message;
+  statusEl.classList.toggle("error", isError);
+}
+
+function truncate(value, max) {
+  const text = String(value);
+  return text.length > max ? `${text.slice(0, max - 1)}...` : text;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll("\"", "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+window.addEventListener("beforeunload", () => {
+  if (frameId) cancelAnimationFrame(frameId);
+});

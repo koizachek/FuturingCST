@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>FuturingCST</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="control-panel" aria-label="Prototype input">
+        <div class="brand-row">
+          <span class="brand-mark"></span>
+          <div>
+            <h1>FuturingCST</h1>
+            <p>Reflective multi-horizon extrapolation for CST prototypes.</p>
+          </div>
+        </div>
+
+        <form id="futuring-form" class="input-stack">
+          <label>
+            <span>Purpose</span>
+            <textarea id="purpose" name="purpose" rows="4" required placeholder="What is the prototype meant to make possible?"></textarea>
+          </label>
+
+          <label>
+            <span>Context</span>
+            <textarea id="context" name="context" rows="5" required placeholder="Where, with whom, and under which constraints would it be used?"></textarea>
+          </label>
+
+          <label>
+            <span>Stakeholders / perspectives</span>
+            <textarea id="stakeholders" name="stakeholders" rows="3" placeholder="Which people, institutions, or practices matter?"></textarea>
+          </label>
+
+          <label>
+            <span>Signals / material</span>
+            <textarea id="signals" name="signals" rows="3" placeholder="Any known trends, references, tensions, or data points to consider."></textarea>
+          </label>
+
+          <button class="primary-button" type="submit">
+            <span class="pulse-dot"></span>
+            Begin extrapolation
+          </button>
+        </form>
+
+        <div id="status" class="status-line" role="status">LLM connection idle.</div>
+      </section>
+
+      <section class="canvas-stage" aria-label="Futures graph">
+        <canvas id="graph-canvas"></canvas>
+        <div class="horizon-axis" aria-hidden="true">
+          <span>2y</span>
+          <span>5y</span>
+          <span>10y</span>
+        </div>
+      </section>
+
+      <aside class="detail-panel" aria-label="Generated futures">
+        <div class="visual-reference">
+          <img src="/visualinspo.png" alt="">
+        </div>
+        <div id="result-panel" class="result-panel">
+          <p class="empty-state">Generated futures will appear here after the LLM response arrives.</p>
+        </div>
+      </aside>
+    </main>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>
