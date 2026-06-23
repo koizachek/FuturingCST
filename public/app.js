@@ -1,11 +1,14 @@
 const form = document.querySelector("#futuring-form");
 const statusEl = document.querySelector("#status");
 const resultPanel = document.querySelector("#result-panel");
+const selectionPanel = document.querySelector("#selection-panel");
 const canvas = document.querySelector("#graph-canvas");
 const ctx = canvas.getContext("2d");
 
 let graph = { nodes: [], edges: [], startedAt: performance.now() };
+let latestData = null;
 let selectedNodeId = null;
+let preferredScenarioId = null;
 let frameId = null;
 
 const palette = {
@@ -20,6 +23,7 @@ resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
 canvas.addEventListener("click", selectNode);
 form.addEventListener("submit", submitForm);
+resultPanel.addEventListener("click", handleResultClick);
 animate();
 
 async function submitForm(event) {
@@ -28,7 +32,10 @@ async function submitForm(event) {
   button.disabled = true;
   setStatus("LLM extrapolation running...");
   resultPanel.innerHTML = "<p class=\"empty-state\">Waiting for structured LLM response.</p>";
+  selectionPanel.innerHTML = "<p class=\"empty-state\">Graph will unfold after the LLM response arrives.</p>";
   graph = { nodes: [], edges: [], startedAt: performance.now() };
+  latestData = null;
+  preferredScenarioId = null;
 
   const formData = new FormData(form);
   const payload = Object.fromEntries(formData.entries());
@@ -45,9 +52,11 @@ async function submitForm(event) {
       throw new Error(data.error || "Request failed.");
     }
 
+    latestData = data;
     graph = buildGraph(data);
     selectedNodeId = graph.nodes[0]?.id || null;
     renderResult(data);
+    renderSelection();
     setStatus(`Generated with ${data.provider} / ${data.model}.`);
   } catch (error) {
     setStatus(error.message, true);
@@ -70,6 +79,7 @@ function buildGraph(data) {
     id: rootId,
     type: "root",
     label: data.title,
+    payload: data,
     x: width * 0.12,
     y: centerY,
     r: 7,
@@ -84,6 +94,7 @@ function buildGraph(data) {
       id,
       type: "factor",
       label: factor.label,
+      payload: factor,
       x: width * 0.28 + Math.cos(angle) * 54,
       y: centerY + Math.sin(angle) * height * 0.32,
       r: 5,
@@ -99,6 +110,7 @@ function buildGraph(data) {
       id,
       type: "perspective",
       label: perspective.label,
+      payload: perspective,
       x: width * 0.22,
       y: height * (0.14 + index * 0.14),
       r: 4,
@@ -118,6 +130,7 @@ function buildGraph(data) {
         id,
         type: "scenario",
         label: `${horizon.years}y / ${scenario.title}`,
+        payload: { ...scenario, years: horizon.years },
         x: width * (horizonX[horizon.years] || 0.7),
         y: centerY + yOffset,
         r: 6,
@@ -151,6 +164,7 @@ function buildGraph(data) {
       id,
       type: "mission",
       label: step.action,
+      payload: step,
       x: width * (0.42 + index * 0.07),
       y: height * 0.86,
       r: 4,
@@ -265,18 +279,35 @@ function selectNode(event) {
 
   if (nearest) {
     selectedNodeId = nearest.id;
+    renderSelection();
   }
 }
 
+function handleResultClick(event) {
+  const scenarioButton = event.target.closest("[data-scenario-id]");
+  if (!scenarioButton) return;
+
+  preferredScenarioId = scenarioButton.dataset.scenarioId;
+  selectedNodeId = preferredScenarioId;
+  renderResult(latestData);
+  renderSelection();
+}
+
 function renderResult(data) {
+  if (!data) return;
+
   const horizons = (data.horizons || []).map((horizon) => `
     <div class="result-block">
       <h2>${horizon.years}-year futures</h2>
-      <ul>
+      <div class="scenario-list">
         ${(horizon.scenarios || []).map((scenario) => `
-          <li><strong>${escapeHtml(scenario.title || "Untitled")}</strong>: ${escapeHtml(scenario.summary || "")}</li>
+          <button class="scenario-row ${scenario.id === preferredScenarioId ? "selected" : ""}" type="button" data-scenario-id="${escapeHtml(scenario.id || "")}">
+            <span>${escapeHtml(scenario.title || "Untitled")}</span>
+            <small>${escapeHtml(scenario.orientation || "scenario")}</small>
+          </button>
+          <p>${escapeHtml(scenario.summary || "")}</p>
         `).join("")}
-      </ul>
+      </div>
     </div>
   `).join("");
 
@@ -287,21 +318,106 @@ function renderResult(data) {
     </div>
     <div class="result-block">
       <h2>Influence factors</h2>
-      <div class="chip-row">
-        ${(data.influenceFactors || []).map((factor) => `<span class="chip">${escapeHtml(factor.label || factor.id)}</span>`).join("")}
-      </div>
+      <ul>
+        ${(data.influenceFactors || []).map((factor) => `
+          <li><strong>${escapeHtml(factor.label || factor.id)}</strong>: ${escapeHtml(factor.rationale || "")}</li>
+        `).join("")}
+      </ul>
     </div>
     <div class="result-block">
       <h2>Perspectives</h2>
-      <div class="chip-row">
-        ${(data.perspectives || []).map((perspective) => `<span class="chip">${escapeHtml(perspective.label || perspective.id)}</span>`).join("")}
-      </div>
+      <ul>
+        ${(data.perspectives || []).map((perspective) => `
+          <li><strong>${escapeHtml(perspective.label || perspective.id)}</strong>: ${escapeHtml(perspective.concern || "")}</li>
+        `).join("")}
+      </ul>
     </div>
     ${horizons}
     <div class="result-block">
       <h2>Mission trace</h2>
       <ul>
-        ${(data.mission || []).map((step) => `<li>${escapeHtml(step.action || "")}</li>`).join("")}
+        ${(data.mission || []).map((step) => `
+          <li><strong>${escapeHtml(step.horizon || "")}</strong>: ${escapeHtml(step.action || "")}</li>
+        `).join("")}
+      </ul>
+    </div>
+  `;
+}
+
+function renderSelection() {
+  const node = graph.nodes.find((item) => item.id === selectedNodeId);
+  if (!node) {
+    selectionPanel.innerHTML = "<p class=\"empty-state\">Select a generated node to inspect its trace.</p>";
+    return;
+  }
+
+  if (node.type === "root") {
+    selectionPanel.innerHTML = `
+      <div class="selection-header">
+        <span>${escapeHtml(node.type)}</span>
+        <h2>${escapeHtml(node.label || "")}</h2>
+      </div>
+      <p>${escapeHtml(node.payload?.reading || "")}</p>
+    `;
+    return;
+  }
+
+  if (node.type === "factor") {
+    selectionPanel.innerHTML = `
+      <div class="selection-header">
+        <span>${escapeHtml(node.payload?.category || "factor")}</span>
+        <h2>${escapeHtml(node.label || "")}</h2>
+      </div>
+      <p>${escapeHtml(node.payload?.rationale || "")}</p>
+      <p class="metadata-line">uncertainty: ${escapeHtml(node.payload?.uncertainty || "unspecified")}</p>
+    `;
+    return;
+  }
+
+  if (node.type === "perspective") {
+    selectionPanel.innerHTML = `
+      <div class="selection-header">
+        <span>perspective</span>
+        <h2>${escapeHtml(node.label || "")}</h2>
+      </div>
+      <p>${escapeHtml(node.payload?.concern || "")}</p>
+    `;
+    return;
+  }
+
+  if (node.type === "scenario") {
+    const payload = node.payload || {};
+    selectionPanel.innerHTML = `
+      <div class="selection-header">
+        <span>${escapeHtml(payload.years || "")}y scenario</span>
+        <h2>${escapeHtml(payload.title || node.label || "")}</h2>
+      </div>
+      <p>${escapeHtml(payload.summary || "")}</p>
+      ${renderMiniList("Signals", payload.signals)}
+      ${renderMiniList("Risks", payload.risks)}
+      ${renderMiniList("Open questions", payload.openQuestions)}
+    `;
+    return;
+  }
+
+  selectionPanel.innerHTML = `
+    <div class="selection-header">
+      <span>${escapeHtml(node.payload?.horizon || "mission")}</span>
+      <h2>${escapeHtml(node.label || "")}</h2>
+    </div>
+    <p>${escapeHtml(node.payload?.reason || "")}</p>
+  `;
+}
+
+function renderMiniList(title, items) {
+  const values = Array.isArray(items) ? items.filter(Boolean) : [];
+  if (!values.length) return "";
+
+  return `
+    <div class="mini-list">
+      <h3>${escapeHtml(title)}</h3>
+      <ul>
+        ${values.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
       </ul>
     </div>
   `;

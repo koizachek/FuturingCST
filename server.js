@@ -162,8 +162,9 @@ async function callLlm(input, apiKey, model) {
     },
     body: JSON.stringify({
       model,
-      temperature: 0.85,
-      max_tokens: 5000,
+      temperature: 0.7,
+      max_tokens: 2600,
+      response_format: { type: "json_object" },
       messages: [
         {
           role: "system",
@@ -300,11 +301,11 @@ Required JSON shape:
 }
 
 Cardinality:
-- 5 to 7 influenceFactors.
-- 4 to 6 perspectives.
+- 4 to 5 influenceFactors.
+- 3 to 4 perspectives.
 - horizons must be exactly 2, 5, and 10 years.
-- each horizon must contain 3 scenarios.
-- mission must contain 5 to 7 actions.
+- each horizon must contain 2 scenarios.
+- mission must contain 4 to 5 actions.
 `.trim();
 }
 
