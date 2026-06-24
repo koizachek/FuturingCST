@@ -254,20 +254,6 @@ textarea:focus {
   padding-left: 18px;
 }
 
-.chip-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-}
-
-.chip {
-  padding: 4px 7px;
-  color: var(--text);
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
-  font-size: 11px;
-}
-
 @media (max-width: 1040px) {
   body {
     overflow: auto;

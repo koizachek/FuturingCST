@@ -90,8 +90,19 @@ function getModelName() {
 }
 
 async function readJsonBody(req) {
+  const maxBytes = Number(process.env.MAX_BODY_BYTES || 65536);
   const chunks = [];
-  for await (const chunk of req) chunks.push(chunk);
+  let total = 0;
+  for await (const chunk of req) {
+    total += chunk.length;
+    if (total > maxBytes) {
+      const error = new Error(`Request body exceeds ${maxBytes} bytes.`);
+      error.statusCode = 413;
+      error.publicMessage = "Request body is too large.";
+      throw error;
+    }
+    chunks.push(chunk);
+  }
   const raw = Buffer.concat(chunks).toString("utf8");
   if (!raw.trim()) return {};
 
@@ -115,13 +126,6 @@ async function extrapolate(input) {
   }
 
   const model = getModelName();
-  if (!model) {
-    const error = new Error("Set LLM_MODEL or OPENROUTER_MODEL in .env.");
-    error.statusCode = 500;
-    error.publicMessage = "OpenRouter model is not configured.";
-    throw error;
-  }
-
   const payload = sanitizeInput(input);
   const llmResponse = await callLlm(payload, apiKey, model);
   return validateExtrapolation(llmResponse, payload);
@@ -136,7 +140,7 @@ function sanitizeInput(input) {
   if (purpose.length < 12 || context.length < 12) {
     const error = new Error("Purpose and context are required.");
     error.statusCode = 400;
-    error.publicMessage = "Bitte fülle Purpose und Context ausführlicher aus.";
+    error.publicMessage = "Please provide more detail for Purpose and Context.";
     throw error;
   }
 
@@ -346,7 +350,7 @@ function serveStatic(requestPath, res) {
     : path.join(publicDir, cleanPath);
 
   const resolved = path.resolve(candidate);
-  const allowed = resolved.startsWith(publicDir) || resolved === path.join(__dirname, "visualinspo.png");
+  const allowed = resolved.startsWith(publicDir + path.sep) || resolved === path.join(__dirname, "visualinspo.png");
   if (!allowed || !fs.existsSync(resolved) || !fs.statSync(resolved).isFile()) {
     sendText(res, 404, "Not found", "text/plain");
     return;
