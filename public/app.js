@@ -30,9 +30,11 @@ const typeLabels = {
 
 const HORIZON_COLUMNS = [
   { years: 2, nx: 0.42 },
-  { years: 5, nx: 0.64 },
-  { years: 10, nx: 0.86 }
+  { years: 5, nx: 0.63 },
+  { years: 10, nx: 0.84 }
 ];
+
+const labelMax = { root: 24, factor: 22, perspective: 22, scenario: 24, mission: 18 };
 const FRAME_DIVIDER_NX = 0.31;
 
 const crosses = makeCrosses(46);
@@ -242,7 +244,7 @@ function addHorizon(years, scenarios) {
       nx: column.nx,
       ny: span(index, scenarios.length, 0.32, 0.66),
       r: 6,
-      labelSide: years === 10 ? "left" : "right",
+      labelSide: "top",
       appearAt: base + index * 220
     });
     created.push(scenario.id);
@@ -483,62 +485,74 @@ function drawNode(node, progress, now) {
 }
 
 function drawLabel(node, color, progress, active) {
-  const text = truncate(node.label || node.id, 26);
   const tag = typeLabels[node.type] || "NODE";
-  const coord = `${node.nx.toFixed(2)} / ${node.ny.toFixed(2)}`;
-  ctx.font = "11px Inter, system-ui, sans-serif";
-  const textWidth = Math.max(ctx.measureText(text).width, ctx.measureText(coord).width, ctx.measureText(tag).width);
+  const text = truncate(node.label || node.id, labelMax[node.type] || 22);
+  const coord = active ? `${node.nx.toFixed(2)} / ${node.ny.toFixed(2)}` : "";
 
-  let lx;
-  let ly = node.y - 8;
-  let leadFromX = node.x;
-  let leadToX;
+  const tagFont = "9px Inter, system-ui, sans-serif";
+  const textFont = "12px Inter, system-ui, sans-serif";
+  ctx.font = tagFont;
+  const tagW = ctx.measureText(tag).width;
+  ctx.font = textFont;
+  const textW = ctx.measureText(text).width;
+  const blockW = Math.max(tagW, textW, coord ? 70 : 0) + 12;
+  const blockH = coord ? 44 : 32;
 
+  const pad = node.r + 8;
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+
+  let bx;
+  let by;
   if (node.labelSide === "left") {
-    lx = node.x - 14 - textWidth;
-    leadToX = node.x - 12;
+    bx = node.x - pad - blockW;
+    by = node.y - blockH / 2;
   } else if (node.labelSide === "top") {
-    lx = node.x - textWidth / 2;
-    ly = node.y - 40;
-    leadFromX = node.x;
-    leadToX = node.x;
+    bx = node.x - blockW / 2;
+    by = node.y - pad - blockH;
   } else {
-    lx = node.x + 14;
-    leadToX = node.x + 12;
+    bx = node.x + pad;
+    by = node.y - blockH / 2;
   }
 
-  ctx.globalAlpha = active ? 1 : 0.62 * progress;
+  // keep the block inside the canvas
+  bx = Math.max(6, Math.min(bx, width - blockW - 6));
+  by = Math.max(4, Math.min(by, height - blockH - 4));
 
-  // leader line
-  ctx.strokeStyle = active ? color : "rgba(214,232,224,0.3)";
+  ctx.globalAlpha = active ? 1 : 0.85 * progress;
+
+  // leader line from node edge toward the block
+  const anchorX = Math.max(bx, Math.min(node.x, bx + blockW));
+  const anchorY = Math.max(by, Math.min(node.y, by + blockH));
+  ctx.strokeStyle = active ? color : "rgba(214,232,224,0.28)";
   ctx.lineWidth = 1;
   ctx.setLineDash([]);
   ctx.beginPath();
-  if (node.labelSide === "top") {
-    ctx.moveTo(node.x, node.y - 10);
-    ctx.lineTo(node.x, ly + 26);
-  } else {
-    ctx.moveTo(leadFromX, node.y);
-    ctx.lineTo(leadToX, node.y);
-    ctx.lineTo(lx + (node.labelSide === "left" ? textWidth : 0), ly + 10);
-  }
+  ctx.moveTo(node.x, node.y);
+  ctx.lineTo(anchorX, anchorY);
   ctx.stroke();
 
+  // dark backing so text reads over the particle field
+  ctx.fillStyle = active ? "rgba(6,10,9,0.92)" : "rgba(6,10,9,0.6)";
+  ctx.fillRect(bx, by, blockW, blockH);
   if (active) {
-    ctx.fillStyle = "rgba(6,10,9,0.78)";
-    ctx.fillRect(lx - 5, ly - 12, textWidth + 10, 40);
     ctx.strokeStyle = color;
-    ctx.strokeRect(lx - 5, ly - 12, textWidth + 10, 40);
+    ctx.strokeRect(bx, by, blockW, blockH);
   }
 
-  ctx.fillStyle = active ? "rgba(120,134,128,0.95)" : "rgba(120,134,128,0.7)";
-  ctx.fillText(tag, lx, ly - 10);
-  ctx.fillStyle = active ? "rgba(245,250,247,1)" : "rgba(230,240,234,0.82)";
-  ctx.font = "12px Inter, system-ui, sans-serif";
-  ctx.fillText(text, lx, ly + 4);
-  ctx.fillStyle = "rgba(120,134,128,0.7)";
-  ctx.font = "9px Inter, system-ui, sans-serif";
-  ctx.fillText(coord, lx, ly + 18);
+  const tx = bx + 6;
+  ctx.textAlign = "left";
+  ctx.fillStyle = active ? "rgba(150,164,158,1)" : "rgba(140,154,148,0.85)";
+  ctx.font = tagFont;
+  ctx.fillText(tag, tx, by + 12);
+  ctx.fillStyle = active ? "rgba(245,250,247,1)" : "rgba(232,242,236,0.95)";
+  ctx.font = textFont;
+  ctx.fillText(text, tx, by + 25);
+  if (coord) {
+    ctx.fillStyle = "rgba(140,154,148,0.8)";
+    ctx.font = tagFont;
+    ctx.fillText(coord, tx, by + 38);
+  }
 }
 
 function drawLegend(width, height) {
