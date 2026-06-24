@@ -5,7 +5,7 @@ const selectionPanel = document.querySelector("#selection-panel");
 const canvas = document.querySelector("#graph-canvas");
 const ctx = canvas.getContext("2d");
 
-let graph = { nodes: [], edges: [], startedAt: performance.now() };
+let graph = { nodes: [], edges: [], index: new Map(), startedAt: performance.now() };
 let latestData = null;
 let selectedNodeId = null;
 let preferredScenarioId = null;
@@ -33,24 +33,29 @@ async function submitForm(event) {
   setStatus("LLM extrapolation running...");
   resultPanel.innerHTML = "<p class=\"empty-state\">Waiting for structured LLM response.</p>";
   selectionPanel.innerHTML = "<p class=\"empty-state\">Graph will unfold after the LLM response arrives.</p>";
-  graph = { nodes: [], edges: [], startedAt: performance.now() };
+  graph = { nodes: [], edges: [], index: new Map(), startedAt: performance.now() };
   latestData = null;
   preferredScenarioId = null;
 
   const formData = new FormData(form);
   const payload = Object.fromEntries(formData.entries());
 
+  const startedAt = performance.now();
   try {
     const response = await fetch("/api/extrapolate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
-    const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data.error || "Request failed.");
+    const contentType = response.headers.get("content-type") || "";
+    if (!response.ok || !contentType.includes("text/event-stream")) {
+      const errorBody = await response.json().catch(() => ({}));
+      throw new Error(errorBody.error || "Request failed.");
     }
+
+    const data = await consumeStream(response, startedAt);
+    if (!data) throw new Error("No futures were returned.");
 
     latestData = data;
     graph = buildGraph(data);
@@ -66,10 +71,54 @@ async function submitForm(event) {
   }
 }
 
+async function consumeStream(response, startedAt) {
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let result = null;
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const events = buffer.split("\n\n");
+    buffer = events.pop() || "";
+
+    for (const block of events) {
+      const event = parseEvent(block);
+      if (!event) continue;
+
+      if (event.name === "progress") {
+        const seconds = ((performance.now() - startedAt) / 1000).toFixed(0);
+        setStatus(`Extrapolating... ${event.data.chars || 0} characters received (${seconds}s)`);
+      } else if (event.name === "done") {
+        result = event.data;
+      } else if (event.name === "error") {
+        throw new Error(event.data.error || "LLM request failed.");
+      }
+    }
+  }
+
+  return result;
+}
+
+function parseEvent(block) {
+  let name = "message";
+  const dataLines = [];
+  for (const line of block.split("\n")) {
+    if (line.startsWith("event:")) name = line.slice(6).trim();
+    else if (line.startsWith("data:")) dataLines.push(line.slice(5).trim());
+  }
+  if (!dataLines.length) return null;
+  try {
+    return { name, data: JSON.parse(dataLines.join("\n")) };
+  } catch {
+    return null;
+  }
+}
+
 function buildGraph(data) {
-  const width = canvas.clientWidth || 900;
-  const height = canvas.clientHeight || 700;
-  const centerY = height * 0.5;
   const start = performance.now();
   const nodes = [];
   const edges = [];
@@ -80,8 +129,8 @@ function buildGraph(data) {
     type: "root",
     label: data.title,
     payload: data,
-    x: width * 0.12,
-    y: centerY,
+    nx: 0.12,
+    ny: 0.5,
     r: 7,
     appearAt: 0
   });
@@ -95,8 +144,9 @@ function buildGraph(data) {
       type: "factor",
       label: factor.label,
       payload: factor,
-      x: width * 0.28 + Math.cos(angle) * 54,
-      y: centerY + Math.sin(angle) * height * 0.32,
+      nx: 0.28,
+      ny: 0.5 + Math.sin(angle) * 0.32,
+      ox: Math.cos(angle) * 54,
       r: 5,
       appearAt: 450 + index * 110
     });
@@ -111,8 +161,8 @@ function buildGraph(data) {
       type: "perspective",
       label: perspective.label,
       payload: perspective,
-      x: width * 0.22,
-      y: height * (0.14 + index * 0.14),
+      nx: 0.22,
+      ny: 0.14 + index * 0.14,
       r: 4,
       appearAt: 760 + index * 120
     });
@@ -125,14 +175,13 @@ function buildGraph(data) {
     const scenarios = horizon.scenarios || [];
     scenarios.forEach((scenario, index) => {
       const id = scenario.id || `scenario_${horizon.years}_${index}`;
-      const yOffset = (index - (scenarios.length - 1) / 2) * height * 0.17;
       nodes.push({
         id,
         type: "scenario",
         label: `${horizon.years}y / ${scenario.title}`,
         payload: { ...scenario, years: horizon.years },
-        x: width * (horizonX[horizon.years] || 0.7),
-        y: centerY + yOffset,
+        nx: horizonX[horizon.years] || 0.7,
+        ny: 0.5 + (index - (scenarios.length - 1) / 2) * 0.17,
         r: 6,
         appearAt: 1300 + horizon.years * 160 + index * 150
       });
@@ -165,8 +214,8 @@ function buildGraph(data) {
       type: "mission",
       label: step.action,
       payload: step,
-      x: width * (0.42 + index * 0.07),
-      y: height * 0.86,
+      nx: 0.42 + index * 0.07,
+      ny: 0.86,
       r: 4,
       appearAt: 3600 + index * 140
     });
@@ -174,13 +223,41 @@ function buildGraph(data) {
     edges.push({ from, to: id, appearAt: 3700 + index * 140 });
   });
 
-  return { nodes, edges, startedAt: start };
+  const index = new Map(nodes.map((node) => [node.id, node]));
+  const built = { nodes, edges, index, startedAt: start };
+  computeLayout(built);
+  return built;
+}
+
+function computeLayout(target) {
+  const width = canvas.clientWidth || 900;
+  const height = canvas.clientHeight || 700;
+  for (const node of target.nodes) {
+    node.x = node.nx * width + (node.ox || 0);
+    node.y = node.ny * height + (node.oy || 0);
+  }
 }
 
 function animate() {
   frameId = requestAnimationFrame(animate);
   draw();
 }
+
+function startAnimation() {
+  if (frameId === null) animate();
+}
+
+function stopAnimation() {
+  if (frameId !== null) {
+    cancelAnimationFrame(frameId);
+    frameId = null;
+  }
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) stopAnimation();
+  else startAnimation();
+});
 
 function draw() {
   const width = canvas.clientWidth;
@@ -194,8 +271,8 @@ function draw() {
   for (const edge of graph.edges) {
     const age = elapsed - edge.appearAt;
     if (age <= 0) continue;
-    const from = graph.nodes.find((node) => node.id === edge.from);
-    const to = graph.nodes.find((node) => node.id === edge.to);
+    const from = graph.index.get(edge.from);
+    const to = graph.index.get(edge.to);
     if (!from || !to) continue;
     drawEdge(from, to, Math.min(1, age / 900), now);
   }
@@ -429,6 +506,7 @@ function resizeCanvas() {
   canvas.width = Math.max(1, Math.floor(rect.width * ratio));
   canvas.height = Math.max(1, Math.floor(rect.height * ratio));
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  if (graph.nodes.length) computeLayout(graph);
 }
 
 function setStatus(message, isError = false) {
@@ -450,6 +528,4 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-window.addEventListener("beforeunload", () => {
-  if (frameId) cancelAnimationFrame(frameId);
-});
+window.addEventListener("beforeunload", stopAnimation);

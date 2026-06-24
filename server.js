@@ -27,9 +27,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === "POST" && url.pathname === "/api/extrapolate") {
-      const body = await readJsonBody(req);
-      const result = await extrapolate(body);
-      sendJson(res, 200, result);
+      await handleExtrapolate(req, res);
       return;
     }
 
@@ -86,7 +84,7 @@ function getBaseUrl() {
 }
 
 function getModelName() {
-  return process.env.LLM_MODEL || process.env.OPENROUTER_MODEL || "anthropic/claude-sonnet-4.6";
+  return process.env.LLM_MODEL || process.env.OPENROUTER_MODEL || "deepseek/deepseek-chat";
 }
 
 async function readJsonBody(req) {
@@ -116,19 +114,49 @@ async function readJsonBody(req) {
   }
 }
 
-async function extrapolate(input) {
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    const error = new Error("Set OPENROUTER_API_KEY in .env.");
-    error.statusCode = 500;
-    error.publicMessage = "OpenRouter is not configured. Set OPENROUTER_API_KEY in .env.";
-    throw error;
+async function handleExtrapolate(req, res) {
+  // Resolve everything that can fail with a normal HTTP error before we
+  // switch the response into Server-Sent Events mode.
+  let payload;
+  let apiKey;
+  let model;
+  try {
+    const body = await readJsonBody(req);
+    payload = sanitizeInput(body);
+    apiKey = getApiKey();
+    if (!apiKey) {
+      const error = new Error("Set OPENROUTER_API_KEY in .env.");
+      error.statusCode = 500;
+      error.publicMessage = "OpenRouter is not configured. Set OPENROUTER_API_KEY in .env.";
+      throw error;
+    }
+    model = getModelName();
+  } catch (error) {
+    const status = error.statusCode || 500;
+    sendJson(res, status, {
+      error: error.publicMessage || "Server error",
+      detail: status >= 500 ? undefined : error.message
+    });
+    return;
   }
 
-  const model = getModelName();
-  const payload = sanitizeInput(input);
-  const llmResponse = await callLlm(payload, apiKey, model);
-  return validateExtrapolation(llmResponse, payload);
+  res.writeHead(200, {
+    "Content-Type": "text/event-stream; charset=utf-8",
+    "Cache-Control": "no-store",
+    "Connection": "keep-alive"
+  });
+
+  const send = (event, data) => res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+
+  try {
+    const llmResponse = await callLlm(payload, apiKey, model, (progress) => send("progress", progress));
+    const result = validateExtrapolation(llmResponse, payload);
+    send("done", result);
+  } catch (error) {
+    send("error", { error: error.publicMessage || "LLM request failed." });
+  } finally {
+    res.end();
+  }
 }
 
 function sanitizeInput(input) {
@@ -151,64 +179,68 @@ function stringField(value, maxLength) {
   return String(value || "").replace(/\s+/g, " ").trim().slice(0, maxLength);
 }
 
-async function callLlm(input, apiKey, model) {
+async function callLlm(input, apiKey, model, onProgress) {
+  const stream = typeof onProgress === "function";
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), Number(process.env.LLM_TIMEOUT_MS || 120000));
 
-  const response = await fetch(`${getBaseUrl()}/chat/completions`, {
-    method: "POST",
-    signal: controller.signal,
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-      "HTTP-Referer": "http://localhost:5173",
-      "X-Title": "FuturingCST"
-    },
-    body: JSON.stringify({
-      model,
-      temperature: 0.7,
-      max_tokens: 2600,
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content: buildSystemPrompt()
-        },
-        {
-          role: "user",
-          content: JSON.stringify(input)
-        }
-      ]
-    })
-  }).catch((error) => {
-    const wrapped = new Error(error.name === "AbortError" ? "LLM request timed out." : error.message);
-    wrapped.statusCode = 502;
-    wrapped.publicMessage = error.name === "AbortError"
-      ? "LLM request timed out. Try again or increase LLM_TIMEOUT_MS."
-      : "Could not reach OpenRouter.";
-    throw wrapped;
-  }).finally(() => {
-    clearTimeout(timeout);
-  });
-
-  const text = await response.text();
-  if (!response.ok) {
-    const error = new Error(`LLM request failed with ${response.status}: ${text}`);
-    error.statusCode = 502;
-    error.publicMessage = "LLM request failed. Check provider, model, and API key.";
-    throw error;
-  }
-
-  let data;
   try {
-    data = JSON.parse(text);
-  } catch {
-    const error = new Error("LLM provider returned non-JSON transport response.");
-    error.statusCode = 502;
-    error.publicMessage = "LLM response could not be parsed.";
-    throw error;
-  }
+    const response = await fetch(`${getBaseUrl()}/chat/completions`, {
+      method: "POST",
+      signal: controller.signal,
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "http://localhost:5173",
+        "X-Title": "FuturingCST"
+      },
+      body: JSON.stringify({
+        model,
+        temperature: 0.7,
+        max_tokens: Number(process.env.LLM_MAX_TOKENS || 4096),
+        response_format: { type: "json_object" },
+        stream,
+        ...(stream ? { stream_options: { include_usage: true } } : {}),
+        messages: [
+          { role: "system", content: buildSystemPrompt() },
+          { role: "user", content: JSON.stringify(input) }
+        ]
+      })
+    }).catch((error) => {
+      const wrapped = new Error(error.name === "AbortError" ? "LLM request timed out." : error.message);
+      wrapped.statusCode = 502;
+      wrapped.publicMessage = error.name === "AbortError"
+        ? "LLM request timed out. Try again or increase LLM_TIMEOUT_MS."
+        : "Could not reach OpenRouter.";
+      throw wrapped;
+    });
 
+    if (!response.ok) {
+      const detail = await response.text();
+      const error = new Error(`LLM request failed with ${response.status}: ${detail}`);
+      error.statusCode = 502;
+      error.publicMessage = "LLM request failed. Check provider, model, and API key.";
+      throw error;
+    }
+
+    const content = stream
+      ? await readStreamedContent(response, onProgress)
+      : extractContent(await response.json());
+
+    try {
+      return parseJsonContent(content);
+    } catch {
+      const error = new Error(`LLM message content was not JSON: ${content}`);
+      error.statusCode = 502;
+      error.publicMessage = "LLM did not return the required JSON structure.";
+      throw error;
+    }
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function extractContent(data) {
   const content = data.choices?.[0]?.message?.content;
   if (!content) {
     const error = new Error("LLM response did not include message content.");
@@ -216,15 +248,52 @@ async function callLlm(input, apiKey, model) {
     error.publicMessage = "LLM response was empty.";
     throw error;
   }
+  return content;
+}
 
-  try {
-    return parseJsonContent(content);
-  } catch {
-    const error = new Error(`LLM message content was not JSON: ${content}`);
+async function readStreamedContent(response, onProgress) {
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let content = "";
+  let lastReported = 0;
+
+  for await (const chunk of response.body) {
+    buffer += decoder.decode(chunk, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || "";
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed.startsWith("data:")) continue;
+      const data = trimmed.slice(5).trim();
+      if (!data || data === "[DONE]") continue;
+
+      let parsed;
+      try {
+        parsed = JSON.parse(data);
+      } catch {
+        continue;
+      }
+
+      const delta = parsed.choices?.[0]?.delta?.content;
+      if (delta) content += delta;
+
+      if (content.length - lastReported >= 200) {
+        lastReported = content.length;
+        onProgress({ chars: content.length });
+      }
+    }
+  }
+
+  if (!content) {
+    const error = new Error("LLM stream did not include any content.");
     error.statusCode = 502;
-    error.publicMessage = "LLM did not return the required JSON structure.";
+    error.publicMessage = "LLM response was empty.";
     throw error;
   }
+
+  onProgress({ chars: content.length });
+  return content;
 }
 
 function parseJsonContent(content) {
@@ -314,20 +383,55 @@ Cardinality:
 }
 
 function validateExtrapolation(raw, input) {
-  const horizons = Array.isArray(raw.horizons) ? raw.horizons : [];
-  const byYear = new Map(horizons.map((horizon) => [Number(horizon.years), horizon]));
+  // Normalize ids so every node has a stable id and every edge reference
+  // (factorIds / perspectiveIds / fromScenarioId) resolves to a real node,
+  // regardless of how loosely the model filled the schema.
+  const influenceFactors = arrayOfObjects(raw.influenceFactors).slice(0, 8).map((factor, index) => ({
+    ...factor,
+    id: stringOr(factor.id, `factor_${index + 1}`)
+  }));
+  const factorIds = new Set(influenceFactors.map((factor) => factor.id));
+
+  const perspectives = arrayOfObjects(raw.perspectives).slice(0, 8).map((perspective, index) => ({
+    ...perspective,
+    id: stringOr(perspective.id, `perspective_${index + 1}`)
+  }));
+  const perspectiveIds = new Set(perspectives.map((perspective) => perspective.id));
+
+  const byYear = new Map(
+    (Array.isArray(raw.horizons) ? raw.horizons : []).map((horizon) => [Number(horizon.years), horizon])
+  );
+  const scenarioIds = new Set();
+  const horizons = [2, 5, 10].map((years) => ({
+    years,
+    scenarios: arrayOfObjects(byYear.get(years)?.scenarios).slice(0, 4).map((scenario, index) => {
+      const id = stringOr(scenario.id, `scenario_${years}_${index + 1}`);
+      scenarioIds.add(id);
+      return {
+        ...scenario,
+        id,
+        factorIds: arrayOfStrings(scenario.factorIds).filter((value) => factorIds.has(value)),
+        perspectiveIds: arrayOfStrings(scenario.perspectiveIds).filter((value) => perspectiveIds.has(value)),
+        signals: arrayOfStrings(scenario.signals),
+        risks: arrayOfStrings(scenario.risks),
+        openQuestions: arrayOfStrings(scenario.openQuestions)
+      };
+    })
+  }));
+
+  const mission = arrayOfObjects(raw.mission).slice(0, 8).map((step) => ({
+    ...step,
+    fromScenarioId: scenarioIds.has(step.fromScenarioId) ? step.fromScenarioId : null
+  }));
 
   return {
     title: stringOr(raw.title, "Untitled futuring map"),
     reading: stringOr(raw.reading, "Multiple plausible futures generated from the submitted purpose and context."),
     input,
-    influenceFactors: arrayOfObjects(raw.influenceFactors).slice(0, 8),
-    perspectives: arrayOfObjects(raw.perspectives).slice(0, 8),
-    horizons: [2, 5, 10].map((years) => ({
-      years,
-      scenarios: arrayOfObjects(byYear.get(years)?.scenarios).slice(0, 4)
-    })),
-    mission: arrayOfObjects(raw.mission).slice(0, 8),
+    influenceFactors,
+    perspectives,
+    horizons,
+    mission,
     generatedAt: new Date().toISOString(),
     provider: getProviderName(),
     model: getModelName()
@@ -336,6 +440,11 @@ function validateExtrapolation(raw, input) {
 
 function arrayOfObjects(value) {
   return Array.isArray(value) ? value.filter((item) => item && typeof item === "object") : [];
+}
+
+function arrayOfStrings(value) {
+  if (!Array.isArray(value)) return [];
+  return value.map((item) => String(item ?? "").trim()).filter(Boolean);
 }
 
 function stringOr(value, fallback) {
