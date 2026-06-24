@@ -149,9 +149,64 @@ async function handleExtrapolate(req, res) {
   const send = (event, data) => res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
 
   try {
-    const llmResponse = await callLlm(payload, apiKey, model, (progress) => send("progress", progress));
-    const result = validateExtrapolation(llmResponse, payload);
-    send("done", result);
+    // Stage 1 — frame: title, reading, influence factors, perspectives.
+    send("stage", { stage: "frame", label: "Reading the prototype frame" });
+    const frameRaw = await callLlm(
+      buildFramePrompt(),
+      payload,
+      apiKey,
+      model,
+      (progress) => send("progress", { stage: "frame", ...progress })
+    );
+    const frame = normalizeFrame(frameRaw);
+    const factorIds = new Set(frame.influenceFactors.map((factor) => factor.id));
+    const perspectiveIds = new Set(frame.perspectives.map((perspective) => perspective.id));
+    send("frame", frame);
+
+    // Stage 2-4 — one horizon at a time so the graph can grow 2y -> 5y -> 10y.
+    const allScenarios = [];
+    for (const years of [2, 5, 10]) {
+      send("stage", { stage: `horizon-${years}`, label: `Extrapolating ${years}-year futures` });
+      const horizonRaw = await callLlm(
+        buildHorizonPrompt(years),
+        { input: payload, horizonYears: years, influenceFactors: frame.influenceFactors, perspectives: frame.perspectives },
+        apiKey,
+        model,
+        (progress) => send("progress", { stage: `horizon-${years}`, ...progress })
+      );
+      const scenarios = normalizeScenarios(horizonRaw.scenarios, years, factorIds, perspectiveIds);
+      scenarios.forEach((scenario) => allScenarios.push(scenario));
+      send("horizon", { years, scenarios });
+    }
+
+    // Stage 5 — mission: backcasting from the surfaced scenarios.
+    send("stage", { stage: "mission", label: "Outlining a mission" });
+    const missionRaw = await callLlm(
+      buildMissionPrompt(),
+      { input: payload, scenarios: allScenarios.map((s) => ({ id: s.id, title: s.title, years: s.years })) },
+      apiKey,
+      model,
+      (progress) => send("progress", { stage: "mission", ...progress })
+    );
+    const scenarioIds = new Set(allScenarios.map((scenario) => scenario.id));
+    const mission = normalizeMission(missionRaw.mission, scenarioIds);
+    send("mission", { mission });
+
+    send("done", {
+      title: frame.title,
+      reading: frame.reading,
+      input: payload,
+      influenceFactors: frame.influenceFactors,
+      perspectives: frame.perspectives,
+      horizons: [2, 5, 10].map((years) => ({
+        years,
+        scenarios: allScenarios.filter((scenario) => scenario.years === years)
+      })),
+      mission,
+      generatedAt: new Date().toISOString(),
+      provider: getProviderName(),
+      model
+    });
   } catch (error) {
     send("error", { error: error.publicMessage || "LLM request failed." });
   } finally {
@@ -179,7 +234,7 @@ function stringField(value, maxLength) {
   return String(value || "").replace(/\s+/g, " ").trim().slice(0, maxLength);
 }
 
-async function callLlm(input, apiKey, model, onProgress) {
+async function callLlm(systemPrompt, userContent, apiKey, model, onProgress) {
   const stream = typeof onProgress === "function";
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), Number(process.env.LLM_TIMEOUT_MS || 120000));
@@ -197,13 +252,13 @@ async function callLlm(input, apiKey, model, onProgress) {
       body: JSON.stringify({
         model,
         temperature: 0.7,
-        max_tokens: Number(process.env.LLM_MAX_TOKENS || 4096),
+        max_tokens: Number(process.env.LLM_MAX_TOKENS || 2200),
         response_format: { type: "json_object" },
         stream,
         ...(stream ? { stream_options: { include_usage: true } } : {}),
         messages: [
-          { role: "system", content: buildSystemPrompt() },
-          { role: "user", content: JSON.stringify(input) }
+          { role: "system", content: systemPrompt },
+          { role: "user", content: typeof userContent === "string" ? userContent : JSON.stringify(userContent) }
         ]
       })
     }).catch((error) => {
@@ -310,132 +365,121 @@ function parseJsonContent(content) {
   throw new Error("No JSON object found.");
 }
 
-function buildSystemPrompt() {
-  return `
+const SHARED_RULES = `
 You are the backend reasoning engine for FuturingCST, a reflective futuring tool for Creativity Support Tool prototypes.
-
 Return only valid JSON. Do not include markdown.
 
 Hard rules:
-- Never predict one future.
-- Always produce multiple plausible futures.
+- Never predict one future. Always surface multiple plausible futures.
 - Treat the output as reflection support, alignment support, and articulation support.
 - Use the user's purpose and context as the only project-specific source.
-- Make influence factors and perspectives explicit.
-- Include uncertainty and evidence needs where the answer would require external validation.
 - Do not invent citations, URLs, statistics, or claims of current factual certainty.
+`.trim();
 
-Required JSON shape:
+function buildFramePrompt() {
+  return `${SHARED_RULES}
+
+Task: read the prototype and surface its futuring frame.
+
+Return JSON:
 {
-  "title": "short project label",
+  "title": "short project label (max 6 words)",
   "reading": "one concise sentence describing the futuring frame",
   "influenceFactors": [
-    {
-      "id": "factor_1",
-      "label": "short label",
-      "category": "technical|social|economic|institutional|cultural|ecological|ethical",
-      "rationale": "why this factor matters",
-      "uncertainty": "low|medium|high"
-    }
+    { "label": "short label", "category": "technical|social|economic|institutional|cultural|ecological|ethical", "rationale": "why this factor matters", "uncertainty": "low|medium|high" }
   ],
   "perspectives": [
+    { "label": "short stakeholder or worldview label", "concern": "what this perspective watches for" }
+  ]
+}
+
+Cardinality: exactly 4 influenceFactors and exactly 3 perspectives. Keep every string short.`;
+}
+
+function buildHorizonPrompt(years) {
+  return `${SHARED_RULES}
+
+Task: given the project frame, influence factors, and perspectives, produce exactly 2 plausible (not predicted) scenarios for the ${years}-year horizon. The two scenarios must diverge from each other.
+
+Return JSON:
+{
+  "scenarios": [
     {
-      "id": "perspective_1",
-      "label": "short stakeholder or worldview label",
-      "concern": "what this perspective watches for"
-    }
-  ],
-  "horizons": [
-    {
-      "years": 2,
-      "scenarios": [
-        {
-          "id": "scenario_2a",
-          "title": "short scenario title",
-          "orientation": "adoption|resistance|adaptation|fragmentation|governance|care",
-          "summary": "plausible future, not a prediction",
-          "factorIds": ["factor_1"],
-          "perspectiveIds": ["perspective_1"],
-          "signals": ["observable early signal"],
-          "risks": ["risk"],
-          "openQuestions": ["question for reflection"]
-        }
-      ]
-    }
-  ],
-  "mission": [
-    {
-      "fromScenarioId": "scenario id this step relates to",
-      "horizon": "now|2y|5y|10y",
-      "action": "backcasting action",
-      "reason": "why this action follows from the preferred direction"
+      "title": "short scenario title (max 6 words)",
+      "orientation": "adoption|resistance|adaptation|fragmentation|governance|care",
+      "summary": "2-3 sentences describing this plausible future",
+      "factorIds": ["ids chosen ONLY from the provided influenceFactors"],
+      "perspectiveIds": ["ids chosen ONLY from the provided perspectives"],
+      "signals": ["observable early signal"],
+      "risks": ["risk"],
+      "openQuestions": ["question for reflection"]
     }
   ]
 }
 
-Cardinality:
-- 4 to 5 influenceFactors.
-- 3 to 4 perspectives.
-- horizons must be exactly 2, 5, and 10 years.
-- each horizon must contain 2 scenarios.
-- mission must contain 4 to 5 actions.
-`.trim();
+Use 1-3 factorIds and 1-2 perspectiveIds per scenario, referencing the exact ids given. Exactly 2 scenarios.`;
 }
 
-function validateExtrapolation(raw, input) {
-  // Normalize ids so every node has a stable id and every edge reference
-  // (factorIds / perspectiveIds / fromScenarioId) resolves to a real node,
-  // regardless of how loosely the model filled the schema.
-  const influenceFactors = arrayOfObjects(raw.influenceFactors).slice(0, 8).map((factor, index) => ({
-    ...factor,
-    id: stringOr(factor.id, `factor_${index + 1}`)
-  }));
-  const factorIds = new Set(influenceFactors.map((factor) => factor.id));
+function buildMissionPrompt() {
+  return `${SHARED_RULES}
 
-  const perspectives = arrayOfObjects(raw.perspectives).slice(0, 8).map((perspective, index) => ({
-    ...perspective,
-    id: stringOr(perspective.id, `perspective_${index + 1}`)
-  }));
-  const perspectiveIds = new Set(perspectives.map((perspective) => perspective.id));
+Task: given the project and the surfaced scenarios across horizons, outline a mission by backcasting from a preferred direction.
 
-  const byYear = new Map(
-    (Array.isArray(raw.horizons) ? raw.horizons : []).map((horizon) => [Number(horizon.years), horizon])
-  );
-  const scenarioIds = new Set();
-  const horizons = [2, 5, 10].map((years) => ({
-    years,
-    scenarios: arrayOfObjects(byYear.get(years)?.scenarios).slice(0, 4).map((scenario, index) => {
-      const id = stringOr(scenario.id, `scenario_${years}_${index + 1}`);
-      scenarioIds.add(id);
-      return {
-        ...scenario,
-        id,
-        factorIds: arrayOfStrings(scenario.factorIds).filter((value) => factorIds.has(value)),
-        perspectiveIds: arrayOfStrings(scenario.perspectiveIds).filter((value) => perspectiveIds.has(value)),
-        signals: arrayOfStrings(scenario.signals),
-        risks: arrayOfStrings(scenario.risks),
-        openQuestions: arrayOfStrings(scenario.openQuestions)
-      };
-    })
+Return JSON:
+{
+  "mission": [
+    { "fromScenarioId": "id chosen ONLY from the provided scenarios", "horizon": "now|2y|5y|10y", "action": "concrete backcasting action", "reason": "why this action follows" }
+  ]
+}
+
+Exactly 4 mission steps. Each fromScenarioId must be one of the provided scenario ids.`;
+}
+
+function normalizeFrame(raw) {
+  const influenceFactors = arrayOfObjects(raw.influenceFactors).slice(0, 5).map((factor, index) => ({
+    id: `factor_${index + 1}`,
+    label: stringOr(factor.label, `Factor ${index + 1}`),
+    category: stringOr(factor.category, "social"),
+    rationale: stringOr(factor.rationale, ""),
+    uncertainty: stringOr(factor.uncertainty, "medium")
   }));
 
-  const mission = arrayOfObjects(raw.mission).slice(0, 8).map((step) => ({
-    ...step,
-    fromScenarioId: scenarioIds.has(step.fromScenarioId) ? step.fromScenarioId : null
+  const perspectives = arrayOfObjects(raw.perspectives).slice(0, 4).map((perspective, index) => ({
+    id: `perspective_${index + 1}`,
+    label: stringOr(perspective.label, `Perspective ${index + 1}`),
+    concern: stringOr(perspective.concern, "")
   }));
 
   return {
     title: stringOr(raw.title, "Untitled futuring map"),
     reading: stringOr(raw.reading, "Multiple plausible futures generated from the submitted purpose and context."),
-    input,
     influenceFactors,
-    perspectives,
-    horizons,
-    mission,
-    generatedAt: new Date().toISOString(),
-    provider: getProviderName(),
-    model: getModelName()
+    perspectives
   };
+}
+
+function normalizeScenarios(rawScenarios, years, factorIds, perspectiveIds) {
+  return arrayOfObjects(rawScenarios).slice(0, 3).map((scenario, index) => ({
+    id: `scenario_${years}_${index + 1}`,
+    years,
+    title: stringOr(scenario.title, `${years}-year scenario ${index + 1}`),
+    orientation: stringOr(scenario.orientation, "adaptation"),
+    summary: stringOr(scenario.summary, ""),
+    factorIds: arrayOfStrings(scenario.factorIds).filter((value) => factorIds.has(value)),
+    perspectiveIds: arrayOfStrings(scenario.perspectiveIds).filter((value) => perspectiveIds.has(value)),
+    signals: arrayOfStrings(scenario.signals),
+    risks: arrayOfStrings(scenario.risks),
+    openQuestions: arrayOfStrings(scenario.openQuestions)
+  }));
+}
+
+function normalizeMission(rawMission, scenarioIds) {
+  return arrayOfObjects(rawMission).slice(0, 6).map((step) => ({
+    fromScenarioId: scenarioIds.has(step.fromScenarioId) ? step.fromScenarioId : null,
+    horizon: stringOr(step.horizon, ""),
+    action: stringOr(step.action, ""),
+    reason: stringOr(step.reason, "")
+  }));
 }
 
 function arrayOfObjects(value) {
