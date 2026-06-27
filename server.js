@@ -10,7 +10,7 @@ const publicDir = path.join(__dirname, "public");
 loadEnv(path.join(__dirname, ".env"));
 
 const port = Number(process.env.PORT || 5173);
-const host = process.env.HOST || "127.0.0.1";
+const host = process.env.HOST || "0.0.0.0";
 
 const server = http.createServer(async (req, res) => {
   try {
@@ -246,7 +246,7 @@ async function callLlm(systemPrompt, userContent, apiKey, model, onProgress) {
       headers: {
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "http://localhost:5173",
+        "HTTP-Referer": process.env.APP_URL || `http://localhost:${port}`,
         "X-Title": "FuturingCST"
       },
       body: JSON.stringify({
