@@ -31,6 +31,11 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    if (req.method === "POST" && url.pathname === "/api/chat") {
+      await handleTraceChat(req, res);
+      return;
+    }
+
     if (req.method === "GET") {
       serveStatic(url.pathname, res);
       return;
@@ -214,6 +219,42 @@ async function handleExtrapolate(req, res) {
   }
 }
 
+async function handleTraceChat(req, res) {
+  try {
+    const body = await readJsonBody(req);
+    const payload = sanitizeChatInput(body);
+    const apiKey = getApiKey();
+    if (!apiKey) {
+      const error = new Error("Set OPENROUTER_API_KEY in .env.");
+      error.statusCode = 500;
+      error.publicMessage = "OpenRouter is not configured. Set OPENROUTER_API_KEY in .env.";
+      throw error;
+    }
+
+    const raw = await callLlm(
+      buildTraceChatPrompt(),
+      payload,
+      apiKey,
+      getModelName(),
+      undefined,
+      {
+        maxTokens: Number(process.env.CHAT_MAX_TOKENS || 360),
+        temperature: 0.45
+      }
+    );
+
+    sendJson(res, 200, {
+      reply: stringField(raw.reply, 1200) || "I can only discuss the selected futuring trace."
+    });
+  } catch (error) {
+    const status = error.statusCode || 500;
+    sendJson(res, status, {
+      error: error.publicMessage || "Chat request failed.",
+      detail: status >= 500 ? undefined : error.message
+    });
+  }
+}
+
 function sanitizeInput(input) {
   const purpose = stringField(input.purpose, 1600);
   const context = stringField(input.context, 2400);
@@ -234,7 +275,73 @@ function stringField(value, maxLength) {
   return String(value || "").replace(/\s+/g, " ").trim().slice(0, maxLength);
 }
 
-async function callLlm(systemPrompt, userContent, apiKey, model, onProgress) {
+function sanitizeChatInput(input) {
+  const message = stringField(input.message, 600);
+  if (message.length < 2) {
+    const error = new Error("Chat message is required.");
+    error.statusCode = 400;
+    error.publicMessage = "Chat message is required.";
+    throw error;
+  }
+
+  return {
+    message,
+    project: sanitizeProjectContext(input.project),
+    trace: sanitizeTraceContext(input.trace),
+    history: arrayOfObjects(input.history).slice(-6).map((item) => ({
+      role: item.role === "assistant" ? "assistant" : "user",
+      content: stringField(item.content, 600)
+    })).filter((item) => item.content),
+    limits: {
+      maxAnswerWords: 120,
+      maxHistoryMessages: 6
+    }
+  };
+}
+
+function sanitizeProjectContext(project = {}) {
+  const input = project.input && typeof project.input === "object" ? project.input : {};
+  return {
+    title: stringField(project.title, 120),
+    reading: stringField(project.reading, 360),
+    purpose: stringField(input.purpose, 600),
+    context: stringField(input.context, 700),
+    stakeholders: stringField(input.stakeholders, 360),
+    signals: stringField(input.signals, 360)
+  };
+}
+
+function sanitizeTraceContext(trace = {}) {
+  return {
+    id: stringField(trace.id, 80),
+    type: stringField(trace.type, 40),
+    label: stringField(trace.label, 140),
+    title: stringField(trace.title, 140),
+    years: Number.isFinite(Number(trace.years)) ? Number(trace.years) : null,
+    orientation: stringField(trace.orientation, 80),
+    summary: stringField(trace.summary, 900),
+    rationale: stringField(trace.rationale, 700),
+    concern: stringField(trace.concern, 700),
+    signals: clipStringArray(trace.signals, 6, 180),
+    risks: clipStringArray(trace.risks, 6, 180),
+    openQuestions: clipStringArray(trace.openQuestions, 6, 220),
+    relatedFactors: arrayOfObjects(trace.relatedFactors).slice(0, 4).map((factor) => ({
+      label: stringField(factor.label, 100),
+      rationale: stringField(factor.rationale, 240),
+      uncertainty: stringField(factor.uncertainty, 40)
+    })),
+    relatedPerspectives: arrayOfObjects(trace.relatedPerspectives).slice(0, 3).map((perspective) => ({
+      label: stringField(perspective.label, 100),
+      concern: stringField(perspective.concern, 240)
+    }))
+  };
+}
+
+function clipStringArray(value, count, length) {
+  return arrayOfStrings(value).slice(0, count).map((item) => stringField(item, length));
+}
+
+async function callLlm(systemPrompt, userContent, apiKey, model, onProgress, options = {}) {
   const stream = typeof onProgress === "function";
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), Number(process.env.LLM_TIMEOUT_MS || 120000));
@@ -251,8 +358,8 @@ async function callLlm(systemPrompt, userContent, apiKey, model, onProgress) {
       },
       body: JSON.stringify({
         model,
-        temperature: 0.7,
-        max_tokens: Number(process.env.LLM_MAX_TOKENS || 2200),
+        temperature: Number(options.temperature ?? 0.7),
+        max_tokens: Number(options.maxTokens || process.env.LLM_MAX_TOKENS || 2200),
         response_format: { type: "json_object" },
         stream,
         ...(stream ? { stream_options: { include_usage: true } } : {}),
@@ -433,6 +540,24 @@ Return JSON:
 }
 
 Exactly 4 mission steps. Each fromScenarioId must be one of the provided scenario ids.`;
+}
+
+function buildTraceChatPrompt() {
+  return `${SHARED_RULES}
+
+Task: answer one short follow-up question about the selected futuring trace.
+
+Scope rules:
+- Discuss only the selected trace, its related factors or perspectives, and the user's submitted prototype frame.
+- If the question asks for unrelated advice, external facts, diagnosis, implementation code, or general chat, answer with a brief refusal that redirects to the selected futuring trace.
+- Keep multiple plausible futures visible. Do not collapse the trace into one prediction.
+- Do not add citations, statistics, URLs, or claims of current factual certainty.
+- Maximum 120 words.
+
+Return JSON:
+{
+  "reply": "short on-topic answer"
+}`;
 }
 
 function normalizeFrame(raw) {

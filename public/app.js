@@ -1,9 +1,12 @@
 const form = document.querySelector("#futuring-form");
+const appShell = document.querySelector(".app-shell");
 const statusEl = document.querySelector("#status");
+const detailPanel = document.querySelector("#detail-panel");
 const resultPanel = document.querySelector("#result-panel");
 const selectionPanel = document.querySelector("#selection-panel");
 const canvas = document.querySelector("#graph-canvas");
 const ctx = canvas.getContext("2d");
+const cursor = document.querySelector("#cursor");
 
 let graph = emptyGraph();
 let latestData = null;
@@ -11,13 +14,15 @@ let selectedNodeId = null;
 let hoveredNodeId = null;
 let preferredScenarioId = null;
 let frameId = null;
+let chatThreads = new Map();
+let generationComplete = false;
 
 const palette = {
-  root: "#f2fff8",
-  factor: "#d8d19b",
-  perspective: "#b8fff2",
-  scenario: "#eef5ef",
-  mission: "#f0ffb0"
+  root: "#f4f4ef",
+  factor: "#aaa9a2",
+  perspective: "#c9c9c3",
+  scenario: "#eeeeea",
+  mission: "#7f7f7a"
 };
 
 const typeLabels = {
@@ -36,16 +41,23 @@ const HORIZON_COLUMNS = [
 
 const labelMax = { root: 24, factor: 22, perspective: 22, scenario: 24, mission: 18 };
 const FRAME_DIVIDER_NX = 0.31;
+const CHAT_INPUT_MAX = 420;
+const CHAT_HISTORY_LIMIT = 6;
 
 const crosses = makeCrosses(46);
 
+initCursor();
 resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
 canvas.addEventListener("click", selectNode);
 canvas.addEventListener("mousemove", hoverNode);
-canvas.addEventListener("mouseleave", () => { hoveredNodeId = null; });
+canvas.addEventListener("mouseleave", () => {
+  hoveredNodeId = null;
+  if (cursor) cursor.classList.remove("big");
+});
 form.addEventListener("submit", submitForm);
 resultPanel.addEventListener("click", handleResultClick);
+detailPanel.addEventListener("submit", handleChatSubmit);
 animate();
 
 function emptyGraph() {
@@ -57,12 +69,13 @@ async function submitForm(event) {
   const button = form.querySelector("button");
   button.disabled = true;
   setStatus("Starting extrapolation...");
-  resultPanel.innerHTML = "<p class=\"empty-state\">Futures will appear here as each horizon is generated.</p>";
-  selectionPanel.innerHTML = "<p class=\"empty-state\">The graph grows stage by stage. Select a node to inspect its trace.</p>";
+  closeDetailPanel();
   graph = emptyGraph();
   latestData = null;
   selectedNodeId = null;
   preferredScenarioId = null;
+  chatThreads = new Map();
+  generationComplete = false;
 
   const formData = new FormData(form);
   const payload = Object.fromEntries(formData.entries());
@@ -84,7 +97,7 @@ async function submitForm(event) {
     await consumeStream(response, startedAt);
   } catch (error) {
     setStatus(error.message, true);
-    resultPanel.innerHTML = `<p class="empty-state">${escapeHtml(error.message)}</p>`;
+    closeDetailPanel();
   } finally {
     button.disabled = false;
   }
@@ -120,21 +133,17 @@ function handleEvent(event, startedAt) {
   } else if (event.name === "frame") {
     latestData = { ...event.data, horizons: [], mission: [] };
     addFrame(event.data);
-    if (!selectedNodeId) selectedNodeId = "root";
-    renderResult(latestData);
-    renderSelection();
   } else if (event.name === "horizon") {
     if (latestData) latestData.horizons.push({ years: event.data.years, scenarios: event.data.scenarios });
     addHorizon(event.data.years, event.data.scenarios);
-    renderResult(latestData);
   } else if (event.name === "mission") {
     if (latestData) latestData.mission = event.data.mission;
     addMission(event.data.mission);
-    renderResult(latestData);
   } else if (event.name === "done") {
     latestData = event.data;
-    renderResult(latestData);
+    generationComplete = true;
     setStatus(`Generated with ${event.data.provider} / ${event.data.model}.`);
+    if (selectedNodeId) renderSelection();
   } else if (event.name === "error") {
     throw new Error(event.data.error || "LLM request failed.");
   }
@@ -368,7 +377,7 @@ function drawField(width, height, now) {
     const x = (i * 67 + now * 0.005) % width;
     const y = (i * 113 + Math.sin(now * 0.0006 + i) * 26) % height;
     const yellow = i % 11 === 0;
-    ctx.fillStyle = yellow ? "rgba(240,255,176,0.5)" : "rgba(214,232,224,0.22)";
+    ctx.fillStyle = yellow ? "rgba(238,238,232,0.5)" : "rgba(214,214,208,0.22)";
     ctx.fillRect(x, y, 1, 1);
   }
 
@@ -378,7 +387,7 @@ function drawField(width, height, now) {
     const y = cross.y * height;
     const s = cross.s;
     const twinkle = 0.18 + 0.12 * Math.sin(now * 0.001 + cross.p);
-    ctx.strokeStyle = cross.yellow ? `rgba(240,255,176,${twinkle + 0.1})` : `rgba(220,236,228,${twinkle})`;
+    ctx.strokeStyle = cross.yellow ? `rgba(238,238,232,${twinkle + 0.1})` : `rgba(220,220,214,${twinkle})`;
     ctx.beginPath();
     ctx.moveTo(x - s, y);
     ctx.lineTo(x + s, y);
@@ -392,12 +401,12 @@ function drawField(width, height, now) {
 function drawScaffold(width, height) {
   if (!graph.nodes.length) return;
   ctx.save();
-  ctx.font = "10px Inter, system-ui, sans-serif";
+  ctx.font = "10px 'Space Mono', ui-monospace, monospace";
   ctx.textBaseline = "top";
 
   // divider between the frame zone and the horizon zone
   const dividerX = FRAME_DIVIDER_NX * width;
-  ctx.strokeStyle = "rgba(230,244,236,0.08)";
+  ctx.strokeStyle = "rgba(232,232,226,0.08)";
   ctx.setLineDash([1, 5]);
   ctx.beginPath();
   ctx.moveTo(dividerX, height * 0.08);
@@ -409,7 +418,7 @@ function drawScaffold(width, height) {
 
   for (const column of HORIZON_COLUMNS) {
     const x = column.nx * width;
-    ctx.strokeStyle = "rgba(230,244,236,0.07)";
+    ctx.strokeStyle = "rgba(232,232,226,0.07)";
     ctx.setLineDash([1, 6]);
     ctx.beginPath();
     ctx.moveTo(x, height * 0.12);
@@ -417,7 +426,7 @@ function drawScaffold(width, height) {
     ctx.stroke();
 
     ctx.setLineDash([]);
-    ctx.fillStyle = "rgba(184,255,242,0.55)";
+    ctx.fillStyle = "rgba(214,214,208,0.62)";
     ctx.textAlign = "center";
     ctx.fillText(`${column.years}-YEAR`, x, height * 0.05);
     ctx.textAlign = "left";
@@ -430,15 +439,15 @@ function drawEdge(from, to, progress, now, kind, highlight) {
   const endY = from.y + (to.y - from.y) * progress;
   const dashOffset = (now * 0.04) % 16;
 
-  let color = "rgba(214,232,224,0.22)";
+  let color = "rgba(214,214,208,0.22)";
   let width = 1;
   let dash = [2, 7];
-  if (kind === "flow") { color = "rgba(184,255,242,0.4)"; width = 1.2; dash = [4, 6]; }
-  else if (kind === "mission") { color = "rgba(240,255,176,0.32)"; dash = [1, 6]; }
-  else if (kind === "frame") { color = "rgba(216,209,155,0.28)"; }
+  if (kind === "flow") { color = "rgba(226,226,220,0.4)"; width = 1.2; dash = [4, 6]; }
+  else if (kind === "mission") { color = "rgba(180,180,174,0.32)"; dash = [1, 6]; }
+  else if (kind === "frame") { color = "rgba(170,169,162,0.28)"; }
 
   if (highlight) {
-    color = kind === "mission" ? "rgba(240,255,176,0.85)" : "rgba(184,255,242,0.85)";
+    color = kind === "mission" ? "rgba(214,214,208,0.82)" : "rgba(238,238,232,0.86)";
     width += 0.6;
   }
 
@@ -489,8 +498,8 @@ function drawLabel(node, color, progress, active) {
   const text = truncate(node.label || node.id, labelMax[node.type] || 22);
   const coord = active ? `${node.nx.toFixed(2)} / ${node.ny.toFixed(2)}` : "";
 
-  const tagFont = "9px Inter, system-ui, sans-serif";
-  const textFont = "12px Inter, system-ui, sans-serif";
+  const tagFont = "9px 'Space Mono', ui-monospace, monospace";
+  const textFont = "12px 'Space Mono', ui-monospace, monospace";
   ctx.font = tagFont;
   const tagW = ctx.measureText(tag).width;
   ctx.font = textFont;
@@ -524,7 +533,7 @@ function drawLabel(node, color, progress, active) {
   // leader line from node edge toward the block
   const anchorX = Math.max(bx, Math.min(node.x, bx + blockW));
   const anchorY = Math.max(by, Math.min(node.y, by + blockH));
-  ctx.strokeStyle = active ? color : "rgba(214,232,224,0.28)";
+  ctx.strokeStyle = active ? color : "rgba(214,214,208,0.28)";
   ctx.lineWidth = 1;
   ctx.setLineDash([]);
   ctx.beginPath();
@@ -549,7 +558,7 @@ function drawLabel(node, color, progress, active) {
   ctx.font = textFont;
   ctx.fillText(text, tx, by + 25);
   if (coord) {
-    ctx.fillStyle = "rgba(140,154,148,0.8)";
+    ctx.fillStyle = "rgba(146,146,140,0.8)";
     ctx.font = tagFont;
     ctx.fillText(coord, tx, by + 38);
   }
@@ -565,7 +574,7 @@ function drawLegend(width, height) {
     ["mission", "Mission step"]
   ];
   ctx.save();
-  ctx.font = "10px Inter, system-ui, sans-serif";
+  ctx.font = "10px 'Space Mono', ui-monospace, monospace";
   ctx.textBaseline = "middle";
   const x = 16;
   let y = height - 16 - items.length * 16;
@@ -577,7 +586,7 @@ function drawLegend(width, height) {
     ctx.arc(x, y, 3, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
-    ctx.fillStyle = "rgba(214,232,224,0.7)";
+    ctx.fillStyle = "rgba(214,214,208,0.7)";
     ctx.fillText(label, x + 10, y);
     y += 16;
   }
@@ -626,7 +635,7 @@ function selectNode(event) {
 function hoverNode(event) {
   const nearest = pickNode(event);
   hoveredNodeId = nearest ? nearest.id : null;
-  canvas.style.cursor = nearest ? "pointer" : "default";
+  if (cursor) cursor.classList.toggle("big", Boolean(nearest));
 }
 
 function handleResultClick(event) {
@@ -697,40 +706,172 @@ function renderResult(data) {
 
 function renderSelection() {
   const node = graph.index.get(selectedNodeId);
-  if (!node) {
-    selectionPanel.innerHTML = "<p class=\"empty-state\">Select a generated node to inspect its trace.</p>";
+  if (!node || !canOpenDetail(node)) {
+    closeDetailPanel();
     return;
   }
 
-  if (node.type === "root") {
-    selectionPanel.innerHTML = header("prototype", node.label) + `<p>${escapeHtml(node.payload?.reading || "")}</p>`;
-    return;
-  }
+  openDetailPanel();
+  let content = "";
 
   if (node.type === "factor") {
-    selectionPanel.innerHTML = header(node.payload?.category || "factor", node.label) +
+    content = header(node.payload?.category || "signal", node.label) +
       `<p>${escapeHtml(node.payload?.rationale || "")}</p>` +
       `<p class="metadata-line">uncertainty: ${escapeHtml(node.payload?.uncertainty || "unspecified")}</p>`;
-    return;
-  }
-
-  if (node.type === "perspective") {
-    selectionPanel.innerHTML = header("perspective", node.label) + `<p>${escapeHtml(node.payload?.concern || "")}</p>`;
-    return;
-  }
-
-  if (node.type === "scenario") {
+  } else if (node.type === "perspective") {
+    content = header("perspective", node.label) + `<p>${escapeHtml(node.payload?.concern || "")}</p>`;
+  } else if (node.type === "scenario") {
     const payload = node.payload || {};
-    selectionPanel.innerHTML = header(`${payload.years || ""}y scenario`, payload.title || node.label) +
+    content = header(`${payload.years || ""}y scenario`, payload.title || node.label) +
       `<p>${escapeHtml(payload.summary || "")}</p>` +
       renderMiniList("Signals", payload.signals) +
       renderMiniList("Risks", payload.risks) +
       renderMiniList("Open questions", payload.openQuestions);
-    return;
   }
 
-  selectionPanel.innerHTML = header(node.payload?.horizon || "mission", node.label) +
-    `<p>${escapeHtml(node.payload?.reason || "")}</p>`;
+  selectionPanel.innerHTML = content;
+  renderChatPanel(node);
+}
+
+function canOpenDetail(node) {
+  if (!latestData || !generationComplete || !node) return false;
+  return node.type === "scenario" || node.type === "factor" || node.type === "perspective";
+}
+
+function openDetailPanel() {
+  appShell.classList.add("detail-open");
+  detailPanel.hidden = false;
+  resizeCanvas();
+}
+
+function closeDetailPanel() {
+  appShell.classList.remove("detail-open");
+  detailPanel.hidden = true;
+  selectionPanel.innerHTML = "<p class=\"empty-state\">Select a generated trace.</p>";
+  resultPanel.innerHTML = "";
+  resizeCanvas();
+}
+
+function getChatThread(nodeId) {
+  if (!chatThreads.has(nodeId)) chatThreads.set(nodeId, []);
+  return chatThreads.get(nodeId);
+}
+
+function renderChatPanel(node) {
+  const thread = getChatThread(node.id);
+  const busy = thread.some((message) => message.pending);
+  const messages = thread.length
+    ? thread.map((message) => `
+      <div class="chat-message ${escapeHtml(message.role)} ${message.pending ? "pending" : ""} ${message.error ? "error" : ""}">
+        ${escapeHtml(message.content || (message.pending ? "Thinking..." : ""))}
+      </div>
+    `).join("")
+    : "<p class=\"empty-state\">Ask a focused follow-up about this trace.</p>";
+
+  resultPanel.innerHTML = `
+    <div class="chat-log" aria-live="polite">${messages}</div>
+    <form class="chat-form">
+      <textarea name="message" rows="3" maxlength="${CHAT_INPUT_MAX}" ${busy ? "disabled" : ""} placeholder="Ask about this trace"></textarea>
+      <button class="primary-button" type="submit" ${busy ? "disabled" : ""}>Send</button>
+    </form>
+  `;
+
+  const log = resultPanel.querySelector(".chat-log");
+  if (log) log.scrollTop = log.scrollHeight;
+}
+
+async function handleChatSubmit(event) {
+  const chatForm = event.target.closest(".chat-form");
+  if (!chatForm) return;
+
+  event.preventDefault();
+  const node = graph.index.get(selectedNodeId);
+  if (!node || !canOpenDetail(node)) return;
+
+  const input = chatForm.elements.message;
+  const message = String(input.value || "").replace(/\s+/g, " ").trim().slice(0, CHAT_INPUT_MAX);
+  if (!message) return;
+
+  const thread = getChatThread(node.id);
+  const history = thread
+    .filter((item) => !item.pending && !item.error)
+    .slice(-CHAT_HISTORY_LIMIT)
+    .map((item) => ({ role: item.role, content: item.content }));
+
+  thread.push({ role: "user", content: message });
+  const pending = { role: "assistant", content: "", pending: true };
+  thread.push(pending);
+  renderChatPanel(node);
+
+  try {
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message,
+        history,
+        trace: buildTraceContext(node),
+        project: buildProjectContext()
+      })
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Chat request failed.");
+
+    pending.content = data.reply || "No response.";
+    pending.pending = false;
+  } catch (error) {
+    pending.content = error.message || "Chat request failed.";
+    pending.pending = false;
+    pending.error = true;
+  }
+
+  trimChatThread(thread);
+  renderChatPanel(node);
+}
+
+function trimChatThread(thread) {
+  const maxMessages = CHAT_HISTORY_LIMIT + 6;
+  if (thread.length > maxMessages) thread.splice(0, thread.length - maxMessages);
+}
+
+function buildProjectContext() {
+  return {
+    title: latestData?.title || "",
+    reading: latestData?.reading || "",
+    input: latestData?.input || {}
+  };
+}
+
+function buildTraceContext(node) {
+  const payload = node.payload || {};
+  const trace = {
+    id: node.id,
+    type: node.type,
+    label: node.label,
+    title: payload.title || node.label,
+    years: payload.years || null,
+    orientation: payload.orientation || "",
+    summary: payload.summary || "",
+    rationale: payload.rationale || "",
+    concern: payload.concern || "",
+    signals: payload.signals || [],
+    risks: payload.risks || [],
+    openQuestions: payload.openQuestions || []
+  };
+
+  if (node.type === "scenario") {
+    trace.relatedFactors = (payload.factorIds || [])
+      .map((id) => graph.index.get(id)?.payload)
+      .filter(Boolean)
+      .map((factor) => ({ label: factor.label, rationale: factor.rationale, uncertainty: factor.uncertainty }));
+    trace.relatedPerspectives = (payload.perspectiveIds || [])
+      .map((id) => graph.index.get(id)?.payload)
+      .filter(Boolean)
+      .map((perspective) => ({ label: perspective.label, concern: perspective.concern }));
+  }
+
+  return trace;
 }
 
 function header(tag, title) {
@@ -756,6 +897,24 @@ function renderMiniList(title, items) {
 }
 
 /* ---------- utilities ---------- */
+
+function initCursor() {
+  if (!cursor || window.matchMedia("(pointer: coarse)").matches) return;
+
+  const interactiveSelector = "a, button, textarea, input, select, [role='button']";
+  document.addEventListener("mousemove", (event) => {
+    cursor.classList.add("is-visible");
+    cursor.style.left = `${event.clientX}px`;
+    cursor.style.top = `${event.clientY}px`;
+  });
+  document.addEventListener("mouseover", (event) => {
+    if (event.target.closest(interactiveSelector)) cursor.classList.add("big");
+  });
+  document.addEventListener("mouseout", (event) => {
+    const next = event.relatedTarget;
+    if (!next || !next.closest || !next.closest(interactiveSelector)) cursor.classList.remove("big");
+  });
+}
 
 function resizeCanvas() {
   const ratio = window.devicePixelRatio || 1;
