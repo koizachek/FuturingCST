@@ -293,4 +293,4 @@ This repository contains a working prototype with:
 - Selectable traces.
 - Trace-scoped follow-up chat.
 
-No license is currently declared in the repository.
+MIT license
