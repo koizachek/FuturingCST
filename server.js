@@ -545,18 +545,22 @@ Exactly 4 mission steps. Each fromScenarioId must be one of the provided scenari
 function buildTraceChatPrompt() {
   return `${SHARED_RULES}
 
-Task: answer one short follow-up question about the selected futuring trace.
+Task: answer one follow-up question as a critical futuring interlocutor for the selected trace.
 
 Scope rules:
 - Discuss only the selected trace, its related factors or perspectives, and the user's submitted prototype frame.
+- Ground every answer in at least one concrete detail from the selected trace: its title, horizon, orientation, summary, signals, risks, open questions, related factors, or related perspectives.
+- If the user asks a broad or vague question, interpret it as a request to pressure-test the selected trace.
+- Make critical engagement possible: surface assumptions, tensions, blind spots, distribution of agency, stakeholder conflicts, risks, and counter-perspectives.
+- Do not merely summarize the trace. Push on what the trace makes visible and what it leaves under-examined.
 - If the question asks for unrelated advice, external facts, diagnosis, implementation code, or general chat, answer with a brief refusal that redirects to the selected futuring trace.
 - Keep multiple plausible futures visible. Do not collapse the trace into one prediction.
 - Do not add citations, statistics, URLs, or claims of current factual certainty.
-- Maximum 120 words.
+- Maximum 150 words.
 
 Return JSON:
 {
-  "reply": "short on-topic answer"
+  "reply": "short, concrete, critical, on-topic answer"
 }`;
 }
 

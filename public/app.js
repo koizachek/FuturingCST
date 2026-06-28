@@ -766,12 +766,12 @@ function renderChatPanel(node) {
         ${escapeHtml(message.content || (message.pending ? "Thinking..." : ""))}
       </div>
     `).join("")
-    : "<p class=\"empty-state\">Ask a focused follow-up about this trace.</p>";
+    : "<p class=\"empty-state\">Ask a critical follow-up about this trace.</p>";
 
   resultPanel.innerHTML = `
     <div class="chat-log" aria-live="polite">${messages}</div>
     <form class="chat-form">
-      <textarea name="message" rows="3" maxlength="${CHAT_INPUT_MAX}" ${busy ? "disabled" : ""} placeholder="Ask about this trace"></textarea>
+      <textarea name="message" rows="3" maxlength="${CHAT_INPUT_MAX}" ${busy ? "disabled" : ""} placeholder="Ask what this trace assumes, risks, or leaves out"></textarea>
       <button class="primary-button" type="submit" ${busy ? "disabled" : ""}>Send</button>
     </form>
   `;
