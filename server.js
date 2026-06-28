@@ -473,7 +473,7 @@ function parseJsonContent(content) {
 }
 
 const SHARED_RULES = `
-You are the backend reasoning engine for FuturingCST, a reflective futuring tool for Creativity Support Tool prototypes.
+You are the backend reasoning engine for FuturingCST, a creativity support tool for reflective multi-horizon futuring.
 Return only valid JSON. Do not include markdown.
 
 Hard rules:
