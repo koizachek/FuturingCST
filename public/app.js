@@ -16,6 +16,9 @@ let preferredScenarioId = null;
 let frameId = null;
 let chatThreads = new Map();
 let generationComplete = false;
+let animationOn = false;
+let hasRun = false;
+let fontsLoaded = false;
 
 const palette = {
   root: "#f4f4ef",
@@ -58,7 +61,15 @@ canvas.addEventListener("mouseleave", () => {
 form.addEventListener("submit", submitForm);
 resultPanel.addEventListener("click", handleResultClick);
 detailPanel.addEventListener("submit", handleChatSubmit);
-animate();
+
+// The render loop only runs once a generation has started; before that the
+// particle field is drawn as a single static frame (again once the webfont
+// arrives, so canvas text does not stay in the fallback font).
+drawOnce();
+document.fonts.ready.then(() => {
+  fontsLoaded = true;
+  drawOnce();
+});
 
 function emptyGraph() {
   return { nodes: [], edges: [], index: new Map(), scenariosByYear: new Map(), startedAt: performance.now() };
@@ -76,6 +87,8 @@ async function submitForm(event) {
   preferredScenarioId = null;
   chatThreads = new Map();
   generationComplete = false;
+  hasRun = true;
+  startAnimation();
 
   const formData = new FormData(form);
   const payload = Object.fromEntries(formData.entries());
@@ -151,6 +164,7 @@ function handleEvent(event, startedAt) {
 
 function stageTitle(stage) {
   if (stage === "frame") return "Reading frame";
+  if (stage === "horizons") return "Extrapolating 2/5/10-year futures";
   if (stage === "mission") return "Outlining mission";
   if (typeof stage === "string" && stage.startsWith("horizon-")) return `Extrapolating ${stage.slice(8)}-year futures`;
   return "Extrapolating";
@@ -325,19 +339,27 @@ function animate() {
 }
 
 function startAnimation() {
-  if (frameId === null) animate();
+  if (animationOn) return;
+  animationOn = true;
+  frameId = requestAnimationFrame(animate);
 }
 
 function stopAnimation() {
+  animationOn = false;
   if (frameId !== null) {
     cancelAnimationFrame(frameId);
     frameId = null;
   }
 }
 
+function drawOnce() {
+  if (!animationOn) draw();
+}
+
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) stopAnimation();
-  else startAnimation();
+  else if (hasRun) startAnimation();
+  else drawOnce();
 });
 
 function draw() {
@@ -500,11 +522,17 @@ function drawLabel(node, color, progress, active) {
 
   const tagFont = "9px 'Space Mono', ui-monospace, monospace";
   const textFont = "12px 'Space Mono', ui-monospace, monospace";
-  ctx.font = tagFont;
-  const tagW = ctx.measureText(tag).width;
-  ctx.font = textFont;
-  const textW = ctx.measureText(text).width;
-  const blockW = Math.max(tagW, textW, coord ? 70 : 0) + 12;
+  let metrics = node.labelMetrics;
+  if (!metrics) {
+    ctx.font = tagFont;
+    const tagW = ctx.measureText(tag).width;
+    ctx.font = textFont;
+    const textW = ctx.measureText(text).width;
+    metrics = { tagW, textW };
+    // cache only once the webfont is in, so fallback-font widths are not kept
+    if (fontsLoaded) node.labelMetrics = metrics;
+  }
+  const blockW = Math.max(metrics.tagW, metrics.textW, coord ? 70 : 0) + 12;
   const blockH = coord ? 44 : 32;
 
   const pad = node.r + 8;
@@ -749,6 +777,7 @@ function closeDetailPanel() {
   detailPanel.hidden = true;
   selectionPanel.innerHTML = "<p class=\"empty-state\">Select a generated trace.</p>";
   resultPanel.innerHTML = "";
+  delete resultPanel.dataset.chatNodeId;
   resizeCanvas();
 }
 
@@ -760,24 +789,34 @@ function getChatThread(nodeId) {
 function renderChatPanel(node) {
   const thread = getChatThread(node.id);
   const busy = thread.some((message) => message.pending);
-  const messages = thread.length
+
+  // Rebuild the panel only when the selected trace changes, so the textarea
+  // keeps its value and focus while replies come in; otherwise only the log
+  // and the busy state are updated.
+  if (resultPanel.dataset.chatNodeId !== node.id || !resultPanel.querySelector(".chat-form")) {
+    resultPanel.dataset.chatNodeId = node.id;
+    resultPanel.innerHTML = `
+      <div class="chat-log" aria-live="polite"></div>
+      <form class="chat-form">
+        <textarea name="message" rows="3" maxlength="${CHAT_INPUT_MAX}" placeholder="Ask what this trace assumes, risks, or leaves out"></textarea>
+        <button class="primary-button" type="submit">Send</button>
+      </form>
+    `;
+  }
+
+  const log = resultPanel.querySelector(".chat-log");
+  log.innerHTML = thread.length
     ? thread.map((message) => `
       <div class="chat-message ${escapeHtml(message.role)} ${message.pending ? "pending" : ""} ${message.error ? "error" : ""}">
         ${escapeHtml(message.content || (message.pending ? "Thinking..." : ""))}
       </div>
     `).join("")
     : "<p class=\"empty-state\">Ask a critical follow-up about this trace.</p>";
+  log.scrollTop = log.scrollHeight;
 
-  resultPanel.innerHTML = `
-    <div class="chat-log" aria-live="polite">${messages}</div>
-    <form class="chat-form">
-      <textarea name="message" rows="3" maxlength="${CHAT_INPUT_MAX}" ${busy ? "disabled" : ""} placeholder="Ask what this trace assumes, risks, or leaves out"></textarea>
-      <button class="primary-button" type="submit" ${busy ? "disabled" : ""}>Send</button>
-    </form>
-  `;
-
-  const log = resultPanel.querySelector(".chat-log");
-  if (log) log.scrollTop = log.scrollHeight;
+  const chatForm = resultPanel.querySelector(".chat-form");
+  chatForm.elements.message.disabled = busy;
+  chatForm.querySelector("button").disabled = busy;
 }
 
 async function handleChatSubmit(event) {
@@ -801,6 +840,7 @@ async function handleChatSubmit(event) {
   thread.push({ role: "user", content: message });
   const pending = { role: "assistant", content: "", pending: true };
   thread.push(pending);
+  input.value = "";
   renderChatPanel(node);
 
   try {
@@ -923,6 +963,7 @@ function resizeCanvas() {
   canvas.height = Math.max(1, Math.floor(rect.height * ratio));
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
   if (graph.nodes.length) computeLayout(graph);
+  drawOnce();
 }
 
 function setStatus(message, isError = false) {

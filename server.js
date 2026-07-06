@@ -12,6 +12,13 @@ loadEnv(path.join(__dirname, ".env"));
 const port = Number(process.env.PORT || 5173);
 const host = process.env.HOST || "0.0.0.0";
 
+const HORIZON_YEARS = [2, 5, 10];
+const RATE_LIMIT_WINDOW_MS = Number(process.env.RATE_LIMIT_WINDOW_MS || 3600000);
+const rateBuckets = new Map();
+
+const cacheStaticAssets = process.env.NODE_ENV === "production";
+const staticCache = new Map();
+
 const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url || "/", `http://${req.headers.host}`);
@@ -27,11 +34,13 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === "POST" && url.pathname === "/api/extrapolate") {
+      enforceRateLimit(req, "extrapolate", Number(process.env.RATE_LIMIT_EXTRAPOLATE || 10));
       await handleExtrapolate(req, res);
       return;
     }
 
     if (req.method === "POST" && url.pathname === "/api/chat") {
+      enforceRateLimit(req, "chat", Number(process.env.RATE_LIMIT_CHAT || 60));
       await handleTraceChat(req, res);
       return;
     }
@@ -72,6 +81,33 @@ function loadEnv(filePath) {
       value = value.slice(1, -1);
     }
     if (!process.env[key]) process.env[key] = value;
+  }
+}
+
+function enforceRateLimit(req, route, limit) {
+  if (!limit || limit <= 0) return; // a limit of 0 disables the check
+
+  const forwarded = String(req.headers["x-forwarded-for"] || "").split(",")[0].trim();
+  const ip = forwarded || req.socket.remoteAddress || "unknown";
+  const key = `${route}:${ip}`;
+  const now = Date.now();
+
+  const hits = (rateBuckets.get(key) || []).filter((time) => now - time < RATE_LIMIT_WINDOW_MS);
+  if (hits.length >= limit) {
+    const error = new Error(`Rate limit of ${limit} ${route} requests per window reached.`);
+    error.statusCode = 429;
+    error.publicMessage = "Too many requests. Please wait a while before trying again.";
+    throw error;
+  }
+
+  hits.push(now);
+  rateBuckets.set(key, hits);
+  if (rateBuckets.size > 2000) pruneRateBuckets(now);
+}
+
+function pruneRateBuckets(now) {
+  for (const [key, hits] of rateBuckets) {
+    if (!hits.some((time) => now - time < RATE_LIMIT_WINDOW_MS)) rateBuckets.delete(key);
   }
 }
 
@@ -168,17 +204,32 @@ async function handleExtrapolate(req, res) {
     const perspectiveIds = new Set(frame.perspectives.map((perspective) => perspective.id));
     send("frame", frame);
 
-    // Stage 2-4 — one horizon at a time so the graph can grow 2y -> 5y -> 10y.
-    const allScenarios = [];
-    for (const years of [2, 5, 10]) {
-      send("stage", { stage: `horizon-${years}`, label: `Extrapolating ${years}-year futures` });
-      const horizonRaw = await callLlm(
+    // Stage 2-4 — the horizons only depend on the frame, so the three LLM
+    // calls run in parallel; events are emitted in order so the graph still
+    // grows 2y -> 5y -> 10y.
+    send("stage", { stage: "horizons", label: "Extrapolating 2/5/10-year futures" });
+    const progressByYears = new Map();
+    const horizonPromises = HORIZON_YEARS.map((years) =>
+      callLlm(
         buildHorizonPrompt(years),
         { input: payload, horizonYears: years, influenceFactors: frame.influenceFactors, perspectives: frame.perspectives },
         apiKey,
         model,
-        (progress) => send("progress", { stage: `horizon-${years}`, ...progress })
-      );
+        (progress) => {
+          progressByYears.set(years, progress.chars || 0);
+          let chars = 0;
+          for (const value of progressByYears.values()) chars += value;
+          send("progress", { stage: "horizons", chars });
+        }
+      )
+    );
+    // Rejections surface through the ordered awaits below; this keeps an
+    // early failure from leaving the later promises' rejections unhandled.
+    horizonPromises.forEach((promise) => promise.catch(() => {}));
+
+    const allScenarios = [];
+    for (const [index, years] of HORIZON_YEARS.entries()) {
+      const horizonRaw = await horizonPromises[index];
       const scenarios = normalizeScenarios(horizonRaw.scenarios, years, factorIds, perspectiveIds);
       scenarios.forEach((scenario) => allScenarios.push(scenario));
       send("horizon", { years, scenarios });
@@ -203,7 +254,7 @@ async function handleExtrapolate(req, res) {
       input: payload,
       influenceFactors: frame.influenceFactors,
       perspectives: frame.perspectives,
-      horizons: [2, 5, 10].map((years) => ({
+      horizons: HORIZON_YEARS.map((years) => ({
         years,
         scenarios: allScenarios.filter((scenario) => scenario.years === years)
       })),
@@ -342,6 +393,17 @@ function clipStringArray(value, count, length) {
 }
 
 async function callLlm(systemPrompt, userContent, apiKey, model, onProgress, options = {}) {
+  try {
+    return await callLlmOnce(systemPrompt, userContent, apiKey, model, onProgress, options);
+  } catch (error) {
+    // One automatic retry when the model returned non-JSON content; other
+    // failures (network, auth, provider errors) surface immediately.
+    if (!error.retryable) throw error;
+    return callLlmOnce(systemPrompt, userContent, apiKey, model, onProgress, options);
+  }
+}
+
+async function callLlmOnce(systemPrompt, userContent, apiKey, model, onProgress, options = {}) {
   const stream = typeof onProgress === "function";
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), Number(process.env.LLM_TIMEOUT_MS || 120000));
@@ -395,6 +457,7 @@ async function callLlm(systemPrompt, userContent, apiKey, model, onProgress, opt
       const error = new Error(`LLM message content was not JSON: ${content}`);
       error.statusCode = 502;
       error.publicMessage = "LLM did not return the required JSON structure.";
+      error.retryable = true;
       throw error;
     }
   } finally {
@@ -627,18 +690,27 @@ function stringOr(value, fallback) {
 
 function serveStatic(requestPath, res) {
   const cleanPath = requestPath === "/" ? "/index.html" : decodeURIComponent(requestPath);
-  const candidate = cleanPath === "/visualinspo.png"
-    ? path.join(__dirname, "visualinspo.png")
-    : path.join(publicDir, cleanPath);
-
-  const resolved = path.resolve(candidate);
-  const allowed = resolved.startsWith(publicDir + path.sep) || resolved === path.join(__dirname, "visualinspo.png");
-  if (!allowed || !fs.existsSync(resolved) || !fs.statSync(resolved).isFile()) {
+  const resolved = path.resolve(path.join(publicDir, cleanPath));
+  if (!resolved.startsWith(publicDir + path.sep)) {
     sendText(res, 404, "Not found", "text/plain");
     return;
   }
 
-  sendText(res, 200, fs.readFileSync(resolved), contentType(resolved));
+  let entry = cacheStaticAssets ? staticCache.get(resolved) : undefined;
+  if (!entry) {
+    if (!fs.existsSync(resolved) || !fs.statSync(resolved).isFile()) {
+      sendText(res, 404, "Not found", "text/plain");
+      return;
+    }
+    entry = { body: fs.readFileSync(resolved), type: contentType(resolved) };
+    if (cacheStaticAssets) staticCache.set(resolved, entry);
+  }
+
+  res.writeHead(200, {
+    "Content-Type": entry.type,
+    "Cache-Control": cacheStaticAssets ? "public, max-age=300" : "no-store"
+  });
+  res.end(entry.body);
 }
 
 function contentType(filePath) {

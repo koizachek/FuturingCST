@@ -118,6 +118,10 @@ LLM_MAX_TOKENS=2200
 CHAT_MAX_TOKENS=360
 LLM_TIMEOUT_MS=120000
 MAX_BODY_BYTES=65536
+
+RATE_LIMIT_EXTRAPOLATE=10
+RATE_LIMIT_CHAT=60
+RATE_LIMIT_WINDOW_MS=3600000
 ```
 
 Notes:
@@ -126,6 +130,8 @@ Notes:
 - `LLM_MODEL` takes precedence over `OPENROUTER_MODEL`.
 - `LLM_BASE_URL` can point to another OpenAI-compatible `/chat/completions` endpoint.
 - `.env` should stay local and should not be committed.
+- `RATE_LIMIT_EXTRAPOLATE` and `RATE_LIMIT_CHAT` cap per-IP requests within `RATE_LIMIT_WINDOW_MS` (default one hour). Setting a limit to `0` disables that check.
+- Setting `NODE_ENV=production` enables in-memory caching of static assets and `Cache-Control: public, max-age=300` headers; without it, static files are re-read from disk on every request for local development.
 
 ## Running Locally
 
@@ -222,7 +228,7 @@ The chat route is scoped to the selected factor, perspective, or scenario. It is
 The backend calls the model in stages:
 
 1. `buildFramePrompt()` creates the initial frame with influence factors and perspectives.
-2. `buildHorizonPrompt(years)` creates divergent futures for each horizon.
+2. `buildHorizonPrompt(years)` creates divergent futures for each horizon. The three horizon calls run in parallel and their results are emitted in 2y -> 5y -> 10y order.
 3. `buildMissionPrompt()` creates mission steps by backcasting from surfaced scenarios.
 4. `buildTraceChatPrompt()` supports follow-up questions on a selected trace.
 
@@ -265,7 +271,7 @@ If the app says OpenRouter is not configured, check that `.env` contains `OPENRO
 
 If generation fails with an LLM request error, check the API key, model name, provider quota, and `LLM_BASE_URL`.
 
-If the server reports that the LLM did not return JSON, rerun the request or try a model that reliably supports JSON object responses.
+If the server reports that the LLM did not return JSON, the server has already retried that call once automatically; rerun the request or try a model that reliably supports JSON object responses.
 
 If requests time out, increase `LLM_TIMEOUT_MS`.
 
