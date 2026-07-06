@@ -649,8 +649,11 @@ textarea:focus {
 
 :root[data-theme="light"] .brand-mark {
   background:
-    radial-gradient(circle at 31% 26%, rgba(255, 255, 255, 0.9) 0 7%, transparent 18%),
-    radial-gradient(circle at 38% 34%, #4c4c45 0%, #33332e 30%, #1d1d19 62%, #0a0a08 100%);
+    radial-gradient(circle at 31% 26%, rgba(255, 255, 255, 0.95) 0 9%, transparent 24%),
+    radial-gradient(circle at 38% 34%, #a8a89e 0%, #6e6e64 28%, #3a3a33 58%, #10100c 82%, #050503 100%);
+  box-shadow:
+    0 1px 3px rgba(40, 36, 28, 0.4),
+    0 0 14px rgba(70, 64, 52, 0.25);
   animation-name: brandPulseLight;
 }
 
