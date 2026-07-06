@@ -530,6 +530,10 @@ textarea:focus {
   font-size: 11px;
 }
 
+.mobile-results {
+  display: none;
+}
+
 @media (max-width: 1040px) {
   body {
     overflow: auto;
@@ -555,6 +559,28 @@ textarea:focus {
 
   #cursor {
     display: none;
+  }
+}
+
+/* lightweight mobile version: the canvas is replaced by a structured list */
+@media (max-width: 760px) {
+  .canvas-stage {
+    display: none;
+  }
+
+  .control-panel,
+  .detail-panel {
+    backdrop-filter: none;
+    box-shadow: none;
+  }
+
+  .mobile-results:not([hidden]) {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 22px;
+    background: var(--panel);
+    border-top: 1px solid var(--line);
   }
 }
 

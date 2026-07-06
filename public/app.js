@@ -8,6 +8,8 @@ const canvas = document.querySelector("#graph-canvas");
 const ctx = canvas.getContext("2d");
 const cursor = document.querySelector("#cursor");
 const themeToggle = document.querySelector("#theme-toggle");
+const mobileResults = document.querySelector("#mobile-results");
+const mobileMedia = window.matchMedia("(max-width: 760px)");
 
 let graph = emptyGraph();
 let latestData = null;
@@ -18,7 +20,6 @@ let frameId = null;
 let chatThreads = new Map();
 let generationComplete = false;
 let animationOn = false;
-let hasRun = false;
 let fontsLoaded = false;
 
 const THEMES = {
@@ -136,14 +137,15 @@ canvas.addEventListener("mouseleave", () => {
 });
 form.addEventListener("submit", submitForm);
 resultPanel.addEventListener("click", handleResultClick);
+mobileResults.addEventListener("click", handleResultClick);
 detailPanel.addEventListener("submit", handleChatSubmit);
+mobileMedia.addEventListener("change", handleViewportChange);
 
 initTheme();
 
-// The render loop only runs once a generation has started; before that the
-// particle field is drawn as a single static frame (again once the webfont
-// arrives, so canvas text does not stay in the fallback font).
-drawOnce();
+// The ambient field (fog, crosses, particles) animates from page load on;
+// on mobile the canvas is hidden, so the loop stays off there.
+if (!isMobile()) startAnimation();
 document.fonts.ready.then(() => {
   fontsLoaded = true;
   drawOnce();
@@ -165,8 +167,9 @@ async function submitForm(event) {
   preferredScenarioId = null;
   chatThreads = new Map();
   generationComplete = false;
-  hasRun = true;
-  startAnimation();
+  mobileResults.hidden = true;
+  mobileResults.innerHTML = "";
+  if (!isMobile()) startAnimation();
 
   const formData = new FormData(form);
   const payload = Object.fromEntries(formData.entries());
@@ -237,6 +240,23 @@ function handleEvent(event, startedAt) {
     if (selectedNodeId) renderSelection();
   } else if (event.name === "error") {
     throw new Error(event.data.error || "LLM request failed.");
+  }
+
+  if (isMobile()) renderMobileResults();
+}
+
+function isMobile() {
+  return mobileMedia.matches;
+}
+
+function handleViewportChange() {
+  if (isMobile()) {
+    stopAnimation();
+    renderMobileResults();
+  } else {
+    mobileResults.hidden = true;
+    startAnimation();
+    resizeCanvas();
   }
 }
 
@@ -436,13 +456,13 @@ function drawOnce() {
 
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) stopAnimation();
-  else if (hasRun) startAnimation();
-  else drawOnce();
+  else if (!isMobile()) startAnimation();
 });
 
 function draw() {
   const width = canvas.clientWidth;
   const height = canvas.clientHeight;
+  if (!width || !height) return; // canvas hidden (mobile view)
   const now = performance.now();
   const elapsed = now - graph.startedAt;
   const active = hoveredNodeId || selectedNodeId;
@@ -823,11 +843,75 @@ function handleResultClick(event) {
 
   preferredScenarioId = scenarioButton.dataset.scenarioId;
   selectedNodeId = preferredScenarioId;
-  renderResult(latestData);
-  renderSelection();
+  if (isMobile()) {
+    renderMobileResults();
+    renderSelection();
+    detailPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  } else {
+    renderResult(latestData);
+    renderSelection();
+  }
 }
 
 /* ---------- side panels ---------- */
+
+function renderMobileResults() {
+  const data = latestData;
+  if (!data) return;
+
+  mobileResults.hidden = false;
+
+  const factors = (data.influenceFactors || []).map((factor) => `
+    <li><strong>${escapeHtml(factor.label || factor.id)}</strong>: ${escapeHtml(factor.rationale || "")}</li>
+  `).join("");
+
+  const perspectives = (data.perspectives || []).map((perspective) => `
+    <li><strong>${escapeHtml(perspective.label || perspective.id)}</strong>: ${escapeHtml(perspective.concern || "")}</li>
+  `).join("");
+
+  const horizons = (data.horizons || []).map((horizon) => `
+    <div class="result-block">
+      <h2>${horizon.years}-year futures</h2>
+      <div class="scenario-list">
+        ${(horizon.scenarios || []).map((scenario) => `
+          <button class="scenario-row ${scenario.id === preferredScenarioId ? "selected" : ""}" type="button" data-scenario-id="${escapeHtml(scenario.id || "")}">
+            <span>${escapeHtml(scenario.title || "Untitled")}</span>
+            <small>${escapeHtml(scenario.orientation || "scenario")}</small>
+          </button>
+          <p>${escapeHtml(scenario.summary || "")}</p>
+        `).join("")}
+      </div>
+    </div>
+  `).join("");
+
+  const missionBlock = (data.mission || []).length ? `
+    <div class="result-block">
+      <h2>Mission trace</h2>
+      <ul>
+        ${(data.mission || []).map((step) => `
+          <li><strong>${escapeHtml(step.horizon || "")}</strong>: ${escapeHtml(step.action || "")}</li>
+        `).join("")}
+      </ul>
+    </div>` : "";
+
+  mobileResults.innerHTML = `
+    <div class="result-block">
+      <h2>${escapeHtml(data.title || "")}</h2>
+      <p>${escapeHtml(data.reading || "")}</p>
+    </div>
+    <div class="result-block">
+      <h2>Influence factors</h2>
+      <ul>${factors}</ul>
+    </div>
+    <div class="result-block">
+      <h2>Perspectives</h2>
+      <ul>${perspectives}</ul>
+    </div>
+    ${horizons}
+    ${missionBlock}
+    ${generationComplete ? "" : "<p class=\"empty-state\">Generating further futures...</p>"}
+  `;
+}
 
 function renderResult(data) {
   if (!data) return;
