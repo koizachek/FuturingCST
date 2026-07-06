@@ -94,9 +94,25 @@ textarea {
 
 .brand-row {
   display: grid;
-  grid-template-columns: 24px 1fr;
+  grid-template-columns: 24px 1fr auto;
   gap: 12px;
   align-items: start;
+}
+
+.theme-toggle {
+  align-self: start;
+  padding: 5px 9px;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+.theme-toggle:hover {
+  color: var(--text);
+  border-color: var(--line-strong);
 }
 
 .brand-mark {
@@ -525,4 +541,127 @@ textarea:focus {
   #cursor {
     display: none;
   }
+}
+
+/* ---------- light theme ---------- */
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #e6e2d8;
+  --panel: rgba(236, 232, 223, 0.88);
+  --panel-strong: rgba(242, 238, 230, 0.96);
+  --line: rgba(41, 41, 36, 0.18);
+  --line-strong: rgba(25, 25, 21, 0.42);
+  --text: #1d1d18;
+  --muted: #4e4e47;
+  --faint: #7a7a72;
+  --aqua: #2c2c27;
+  --lime: #14140f;
+  --gold: #5f5f57;
+  --danger: #a83232;
+}
+
+:root[data-theme="light"] body {
+  background:
+    radial-gradient(circle at 22% 18%, rgba(60, 60, 50, 0.06), transparent 32%),
+    linear-gradient(135deg, #edeae0 0%, var(--bg) 48%, #dcd7ca 100%);
+}
+
+:root[data-theme="light"] .detail-panel {
+  --muted: #45453f;
+  --faint: #6e6e66;
+  --text: #191914;
+}
+
+:root[data-theme="light"] .brand-mark {
+  background:
+    radial-gradient(circle at 31% 26%, rgba(255, 255, 255, 0.9) 0 7%, transparent 18%),
+    radial-gradient(circle at 38% 34%, #4c4c45 0%, #33332e 30%, #1d1d19 62%, #0a0a08 100%);
+  animation-name: brandPulseLight;
+}
+
+@keyframes brandPulseLight {
+  0%,
+  100% {
+    transform: scale(0.94);
+    box-shadow:
+      0 0 10px rgba(40, 40, 34, 0.22),
+      0 0 24px rgba(70, 70, 62, 0.12);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow:
+      0 0 16px rgba(30, 30, 26, 0.34),
+      0 0 38px rgba(60, 60, 54, 0.18);
+  }
+}
+
+:root[data-theme="light"] textarea {
+  background: rgba(252, 250, 244, 0.6);
+}
+
+:root[data-theme="light"] textarea:focus {
+  box-shadow: 0 0 0 1px rgba(44, 44, 39, 0.18);
+}
+
+:root[data-theme="light"] .primary-button {
+  color: #f2efe7;
+}
+
+:root[data-theme="light"] .pulse-dot {
+  background: #f2efe7;
+}
+
+:root[data-theme="light"] .canvas-stage {
+  background-image:
+    linear-gradient(rgba(35, 35, 30, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(35, 35, 30, 0.07) 1px, transparent 1px);
+}
+
+:root[data-theme="light"] #cursor {
+  background:
+    radial-gradient(circle at 38% 34%, rgba(20, 20, 16, 0.9) 0%, rgba(60, 60, 52, 0.6) 34%, rgba(120, 120, 112, 0.2) 62%, transparent 74%);
+  box-shadow:
+    0 0 10px rgba(40, 40, 34, 0.3),
+    0 0 24px rgba(70, 70, 62, 0.16);
+  mix-blend-mode: multiply;
+}
+
+:root[data-theme="light"] .horizon-axis span {
+  border-top-color: rgba(30, 40, 36, 0.2);
+}
+
+:root[data-theme="light"] .selection-header span {
+  color: #22221c;
+}
+
+:root[data-theme="light"] .scenario-row {
+  background: rgba(250, 248, 242, 0.55);
+}
+
+:root[data-theme="light"] .scenario-row.selected {
+  box-shadow: 0 0 0 1px rgba(44, 44, 39, 0.2);
+}
+
+:root[data-theme="light"] .chat-message {
+  color: #2a2a24;
+  background: rgba(250, 248, 242, 0.6);
+}
+
+:root[data-theme="light"] .chat-message.user {
+  color: #161612;
+  background: rgba(215, 210, 198, 0.7);
+  border-color: rgba(30, 30, 26, 0.28);
+}
+
+:root[data-theme="light"] .chat-message.assistant.pending {
+  color: #6e6e66;
+}
+
+:root[data-theme="light"] .detail-panel textarea::placeholder {
+  color: #83837b;
+}
+
+:root[data-theme="light"] .trace-chip {
+  background: rgba(250, 248, 242, 0.5);
 }

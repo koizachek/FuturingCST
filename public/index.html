@@ -4,6 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>FuturingCST</title>
+    <script>
+      // applied before the stylesheet loads so the page does not flash dark
+      try {
+        if (localStorage.getItem("futuringcst-theme") === "light") {
+          document.documentElement.dataset.theme = "light";
+        }
+      } catch (error) { /* storage unavailable: keep default */ }
+    </script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%23060a09'/><circle cx='8' cy='8' r='3.5' fill='%23eeeeea'/><circle cx='13' cy='4' r='1' fill='%23aaa9a2'/><circle cx='3' cy='12' r='1' fill='%23aaa9a2'/></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,6 +28,7 @@
             <h1>FuturingCST</h1>
             <p>A creativity support tool for reflective multi-horizon futuring</p>
           </div>
+          <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Switch color theme">LIGHT</button>
         </div>
 
         <form id="futuring-form" class="input-stack">

@@ -7,6 +7,7 @@ const selectionPanel = document.querySelector("#selection-panel");
 const canvas = document.querySelector("#graph-canvas");
 const ctx = canvas.getContext("2d");
 const cursor = document.querySelector("#cursor");
+const themeToggle = document.querySelector("#theme-toggle");
 
 let graph = emptyGraph();
 let latestData = null;
@@ -20,13 +21,75 @@ let animationOn = false;
 let hasRun = false;
 let fontsLoaded = false;
 
-const palette = {
-  root: "#f4f4ef",
-  factor: "#aaa9a2",
-  perspective: "#c9c9c3",
-  scenario: "#eeeeea",
-  mission: "#7f7f7a"
+const THEMES = {
+  dark: {
+    palette: {
+      root: "#f4f4ef",
+      factor: "#aaa9a2",
+      perspective: "#c9c9c3",
+      scenario: "#eeeeea",
+      mission: "#7f7f7a"
+    },
+    fieldDotBright: "rgba(238,238,232,0.5)",
+    fieldDot: "rgba(214,214,208,0.22)",
+    crossBright: "238,238,232",
+    cross: "220,220,214",
+    scaffoldDivider: "rgba(232,232,226,0.08)",
+    scaffoldColumn: "rgba(232,232,226,0.07)",
+    scaffoldFrameLabel: "rgba(156,171,164,0.7)",
+    scaffoldColumnLabel: "rgba(214,214,208,0.62)",
+    edge: "rgba(214,214,208,0.22)",
+    edgeFlow: "rgba(226,226,220,0.4)",
+    edgeMission: "rgba(180,180,174,0.32)",
+    edgeFrame: "rgba(170,169,162,0.28)",
+    edgeHighlightMission: "rgba(214,214,208,0.82)",
+    edgeHighlight: "rgba(238,238,232,0.86)",
+    leader: "rgba(214,214,208,0.28)",
+    labelBackActive: "rgba(6,10,9,0.92)",
+    labelBack: "rgba(6,10,9,0.6)",
+    labelTagActive: "rgba(150,164,158,1)",
+    labelTag: "rgba(140,154,148,0.85)",
+    labelTextActive: "rgba(245,250,247,1)",
+    labelText: "rgba(232,242,236,0.95)",
+    labelCoord: "rgba(146,146,140,0.8)",
+    legendText: "rgba(214,214,208,0.7)"
+  },
+  light: {
+    palette: {
+      root: "#14140f",
+      factor: "#5c5c53",
+      perspective: "#3c3c34",
+      scenario: "#1d1d17",
+      mission: "#8a8a80"
+    },
+    fieldDotBright: "rgba(40,40,32,0.5)",
+    fieldDot: "rgba(70,70,62,0.22)",
+    crossBright: "40,40,32",
+    cross: "80,80,72",
+    scaffoldDivider: "rgba(30,30,24,0.12)",
+    scaffoldColumn: "rgba(30,30,24,0.1)",
+    scaffoldFrameLabel: "rgba(90,104,98,0.8)",
+    scaffoldColumnLabel: "rgba(70,70,62,0.66)",
+    edge: "rgba(70,70,62,0.26)",
+    edgeFlow: "rgba(50,50,44,0.44)",
+    edgeMission: "rgba(90,90,82,0.4)",
+    edgeFrame: "rgba(95,94,87,0.32)",
+    edgeHighlightMission: "rgba(40,40,34,0.85)",
+    edgeHighlight: "rgba(20,20,16,0.88)",
+    leader: "rgba(70,70,62,0.32)",
+    labelBackActive: "rgba(240,237,229,0.94)",
+    labelBack: "rgba(238,234,226,0.7)",
+    labelTagActive: "rgba(88,102,96,1)",
+    labelTag: "rgba(96,110,104,0.9)",
+    labelTextActive: "rgba(16,20,18,1)",
+    labelText: "rgba(24,32,28,0.95)",
+    labelCoord: "rgba(110,110,104,0.9)",
+    legendText: "rgba(70,70,62,0.75)"
+  }
 };
+
+let themeName = "dark";
+let theme = THEMES.dark;
 
 const typeLabels = {
   root: "PROTOTYPE",
@@ -61,6 +124,8 @@ canvas.addEventListener("mouseleave", () => {
 form.addEventListener("submit", submitForm);
 resultPanel.addEventListener("click", handleResultClick);
 detailPanel.addEventListener("submit", handleChatSubmit);
+
+initTheme();
 
 // The render loop only runs once a generation has started; before that the
 // particle field is drawn as a single static frame (again once the webfont
@@ -399,7 +464,7 @@ function drawField(width, height, now) {
     const x = (i * 67 + now * 0.005) % width;
     const y = (i * 113 + Math.sin(now * 0.0006 + i) * 26) % height;
     const yellow = i % 11 === 0;
-    ctx.fillStyle = yellow ? "rgba(238,238,232,0.5)" : "rgba(214,214,208,0.22)";
+    ctx.fillStyle = yellow ? theme.fieldDotBright : theme.fieldDot;
     ctx.fillRect(x, y, 1, 1);
   }
 
@@ -409,7 +474,7 @@ function drawField(width, height, now) {
     const y = cross.y * height;
     const s = cross.s;
     const twinkle = 0.18 + 0.12 * Math.sin(now * 0.001 + cross.p);
-    ctx.strokeStyle = cross.yellow ? `rgba(238,238,232,${twinkle + 0.1})` : `rgba(220,220,214,${twinkle})`;
+    ctx.strokeStyle = cross.yellow ? `rgba(${theme.crossBright},${twinkle + 0.1})` : `rgba(${theme.cross},${twinkle})`;
     ctx.beginPath();
     ctx.moveTo(x - s, y);
     ctx.lineTo(x + s, y);
@@ -428,19 +493,19 @@ function drawScaffold(width, height) {
 
   // divider between the frame zone and the horizon zone
   const dividerX = FRAME_DIVIDER_NX * width;
-  ctx.strokeStyle = "rgba(232,232,226,0.08)";
+  ctx.strokeStyle = theme.scaffoldDivider;
   ctx.setLineDash([1, 5]);
   ctx.beginPath();
   ctx.moveTo(dividerX, height * 0.08);
   ctx.lineTo(dividerX, height * 0.92);
   ctx.stroke();
 
-  ctx.fillStyle = "rgba(156,171,164,0.7)";
+  ctx.fillStyle = theme.scaffoldFrameLabel;
   ctx.fillText("FRAME", width * 0.06, height * 0.05);
 
   for (const column of HORIZON_COLUMNS) {
     const x = column.nx * width;
-    ctx.strokeStyle = "rgba(232,232,226,0.07)";
+    ctx.strokeStyle = theme.scaffoldColumn;
     ctx.setLineDash([1, 6]);
     ctx.beginPath();
     ctx.moveTo(x, height * 0.12);
@@ -448,7 +513,7 @@ function drawScaffold(width, height) {
     ctx.stroke();
 
     ctx.setLineDash([]);
-    ctx.fillStyle = "rgba(214,214,208,0.62)";
+    ctx.fillStyle = theme.scaffoldColumnLabel;
     ctx.textAlign = "center";
     ctx.fillText(`${column.years}-YEAR`, x, height * 0.05);
     ctx.textAlign = "left";
@@ -461,15 +526,15 @@ function drawEdge(from, to, progress, now, kind, highlight) {
   const endY = from.y + (to.y - from.y) * progress;
   const dashOffset = (now * 0.04) % 16;
 
-  let color = "rgba(214,214,208,0.22)";
+  let color = theme.edge;
   let width = 1;
   let dash = [2, 7];
-  if (kind === "flow") { color = "rgba(226,226,220,0.4)"; width = 1.2; dash = [4, 6]; }
-  else if (kind === "mission") { color = "rgba(180,180,174,0.32)"; dash = [1, 6]; }
-  else if (kind === "frame") { color = "rgba(170,169,162,0.28)"; }
+  if (kind === "flow") { color = theme.edgeFlow; width = 1.2; dash = [4, 6]; }
+  else if (kind === "mission") { color = theme.edgeMission; dash = [1, 6]; }
+  else if (kind === "frame") { color = theme.edgeFrame; }
 
   if (highlight) {
-    color = kind === "mission" ? "rgba(214,214,208,0.82)" : "rgba(238,238,232,0.86)";
+    color = kind === "mission" ? theme.edgeHighlightMission : theme.edgeHighlight;
     width += 0.6;
   }
 
@@ -486,7 +551,7 @@ function drawEdge(from, to, progress, now, kind, highlight) {
 }
 
 function drawNode(node, progress, now) {
-  const color = palette[node.type] || palette.scenario;
+  const color = theme.palette[node.type] || theme.palette.scenario;
   const radius = node.r * progress;
   const active = node.id === selectedNodeId || node.id === hoveredNodeId;
 
@@ -561,7 +626,7 @@ function drawLabel(node, color, progress, active) {
   // leader line from node edge toward the block
   const anchorX = Math.max(bx, Math.min(node.x, bx + blockW));
   const anchorY = Math.max(by, Math.min(node.y, by + blockH));
-  ctx.strokeStyle = active ? color : "rgba(214,214,208,0.28)";
+  ctx.strokeStyle = active ? color : theme.leader;
   ctx.lineWidth = 1;
   ctx.setLineDash([]);
   ctx.beginPath();
@@ -569,8 +634,8 @@ function drawLabel(node, color, progress, active) {
   ctx.lineTo(anchorX, anchorY);
   ctx.stroke();
 
-  // dark backing so text reads over the particle field
-  ctx.fillStyle = active ? "rgba(6,10,9,0.92)" : "rgba(6,10,9,0.6)";
+  // backing so text reads over the particle field
+  ctx.fillStyle = active ? theme.labelBackActive : theme.labelBack;
   ctx.fillRect(bx, by, blockW, blockH);
   if (active) {
     ctx.strokeStyle = color;
@@ -579,14 +644,14 @@ function drawLabel(node, color, progress, active) {
 
   const tx = bx + 6;
   ctx.textAlign = "left";
-  ctx.fillStyle = active ? "rgba(150,164,158,1)" : "rgba(140,154,148,0.85)";
+  ctx.fillStyle = active ? theme.labelTagActive : theme.labelTag;
   ctx.font = tagFont;
   ctx.fillText(tag, tx, by + 12);
-  ctx.fillStyle = active ? "rgba(245,250,247,1)" : "rgba(232,242,236,0.95)";
+  ctx.fillStyle = active ? theme.labelTextActive : theme.labelText;
   ctx.font = textFont;
   ctx.fillText(text, tx, by + 25);
   if (coord) {
-    ctx.fillStyle = "rgba(146,146,140,0.8)";
+    ctx.fillStyle = theme.labelCoord;
     ctx.font = tagFont;
     ctx.fillText(coord, tx, by + 38);
   }
@@ -607,14 +672,14 @@ function drawLegend(width, height) {
   const x = 16;
   let y = height - 16 - items.length * 16;
   for (const [type, label] of items) {
-    ctx.fillStyle = palette[type];
-    ctx.shadowColor = palette[type];
+    ctx.fillStyle = theme.palette[type];
+    ctx.shadowColor = theme.palette[type];
     ctx.shadowBlur = 6;
     ctx.beginPath();
     ctx.arc(x, y, 3, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
-    ctx.fillStyle = "rgba(214,214,208,0.7)";
+    ctx.fillStyle = theme.legendText;
     ctx.fillText(label, x + 10, y);
     y += 16;
   }
@@ -937,6 +1002,35 @@ function renderMiniList(title, items) {
 }
 
 /* ---------- utilities ---------- */
+
+function initTheme() {
+  let stored = null;
+  try {
+    stored = localStorage.getItem("futuringcst-theme");
+  } catch {
+    // storage unavailable: fall back to the default theme
+  }
+  applyTheme(stored === "light" ? "light" : "dark");
+
+  if (themeToggle) {
+    themeToggle.addEventListener("click", () => {
+      applyTheme(themeName === "dark" ? "light" : "dark");
+    });
+  }
+}
+
+function applyTheme(name) {
+  themeName = name;
+  theme = THEMES[name] || THEMES.dark;
+  document.documentElement.dataset.theme = name;
+  if (themeToggle) themeToggle.textContent = name === "dark" ? "LIGHT" : "DARK";
+  try {
+    localStorage.setItem("futuringcst-theme", name);
+  } catch {
+    // storage unavailable: theme just won't persist
+  }
+  drawOnce();
+}
 
 function initCursor() {
   if (!cursor || window.matchMedia("(pointer: coarse)").matches) return;
