@@ -52,7 +52,13 @@ const THEMES = {
     labelTextActive: "rgba(245,250,247,1)",
     labelText: "rgba(232,242,236,0.95)",
     labelCoord: "rgba(146,146,140,0.8)",
-    legendText: "rgba(214,214,208,0.7)"
+    legendText: "rgba(214,214,208,0.7)",
+    accent: "#8393b0",
+    accentGlow: "rgba(131,147,176,0.55)",
+    fog: "224,224,218",
+    fogAlpha: 0.05,
+    frameLine: "rgba(214,214,208,0.3)",
+    frameLineSoft: "rgba(214,214,208,0.14)"
   },
   light: {
     palette: {
@@ -84,7 +90,13 @@ const THEMES = {
     labelTextActive: "rgba(16,20,18,1)",
     labelText: "rgba(24,32,28,0.95)",
     labelCoord: "rgba(110,110,104,0.9)",
-    legendText: "rgba(70,70,62,0.75)"
+    legendText: "rgba(70,70,62,0.75)",
+    accent: "#8393b0",
+    accentGlow: "rgba(131,147,176,0.5)",
+    fog: "96,88,70",
+    fogAlpha: 0.055,
+    frameLine: "rgba(50,50,42,0.4)",
+    frameLineSoft: "rgba(50,50,42,0.18)"
   }
 };
 
@@ -111,6 +123,7 @@ const CHAT_INPUT_MAX = 420;
 const CHAT_HISTORY_LIMIT = 6;
 
 const crosses = makeCrosses(46);
+const fogPatches = makeFog(5);
 
 initCursor();
 resizeCanvas();
@@ -437,6 +450,7 @@ function draw() {
   if (graph.nodes.length) computeLayout(graph);
   ctx.clearRect(0, 0, width, height);
   drawField(width, height, now);
+  drawChartFrame(width, height);
   drawScaffold(width, height);
 
   for (const edge of graph.edges) {
@@ -446,7 +460,8 @@ function draw() {
     const to = graph.index.get(edge.to);
     if (!from || !to) continue;
     const highlight = active && (edge.from === active || edge.to === active);
-    drawEdge(from, to, Math.min(1, age / 700), now, edge.kind, highlight);
+    const accent = selectedNodeId && (edge.from === selectedNodeId || edge.to === selectedNodeId);
+    drawEdge(from, to, Math.min(1, age / 700), now, edge.kind, highlight, accent);
   }
 
   for (const node of graph.nodes) {
@@ -460,6 +475,20 @@ function draw() {
 
 function drawField(width, height, now) {
   ctx.save();
+
+  // soft drifting fog patches, like traces on an exposed photographic plate
+  for (const patch of fogPatches) {
+    const cx = (patch.x + 0.03 * Math.sin(now * 0.00004 + patch.p)) * width;
+    const cy = (patch.y + 0.02 * Math.cos(now * 0.00003 + patch.p)) * height;
+    const radius = patch.r * Math.min(width, height);
+    const pulse = theme.fogAlpha * (0.75 + 0.25 * Math.sin(now * 0.0002 + patch.p));
+    const fog = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+    fog.addColorStop(0, `rgba(${theme.fog},${pulse})`);
+    fog.addColorStop(1, `rgba(${theme.fog},0)`);
+    ctx.fillStyle = fog;
+    ctx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2);
+  }
+
   for (let i = 0; i < 220; i += 1) {
     const x = (i * 67 + now * 0.005) % width;
     const y = (i * 113 + Math.sin(now * 0.0006 + i) * 26) % height;
@@ -482,6 +511,35 @@ function drawField(width, height, now) {
     ctx.lineTo(x, y + s);
     ctx.stroke();
   }
+  ctx.restore();
+}
+
+function drawChartFrame(width, height) {
+  // double-ruled border with tick marks, like an old star chart plate
+  ctx.save();
+  ctx.lineWidth = 1;
+  ctx.setLineDash([]);
+
+  ctx.strokeStyle = theme.frameLine;
+  ctx.strokeRect(10.5, 10.5, width - 21, height - 21);
+  ctx.strokeStyle = theme.frameLineSoft;
+  ctx.strokeRect(16.5, 16.5, width - 33, height - 33);
+
+  ctx.strokeStyle = theme.frameLine;
+  ctx.beginPath();
+  for (let x = 60; x < width - 30; x += 90) {
+    ctx.moveTo(x + 0.5, 10.5);
+    ctx.lineTo(x + 0.5, 16.5);
+    ctx.moveTo(x + 0.5, height - 16.5);
+    ctx.lineTo(x + 0.5, height - 10.5);
+  }
+  for (let y = 60; y < height - 30; y += 90) {
+    ctx.moveTo(10.5, y + 0.5);
+    ctx.lineTo(16.5, y + 0.5);
+    ctx.moveTo(width - 16.5, y + 0.5);
+    ctx.lineTo(width - 10.5, y + 0.5);
+  }
+  ctx.stroke();
   ctx.restore();
 }
 
@@ -521,7 +579,7 @@ function drawScaffold(width, height) {
   ctx.restore();
 }
 
-function drawEdge(from, to, progress, now, kind, highlight) {
+function drawEdge(from, to, progress, now, kind, highlight, accent) {
   const endX = from.x + (to.x - from.x) * progress;
   const endY = from.y + (to.y - from.y) * progress;
   const dashOffset = (now * 0.04) % 16;
@@ -533,7 +591,10 @@ function drawEdge(from, to, progress, now, kind, highlight) {
   else if (kind === "mission") { color = theme.edgeMission; dash = [1, 6]; }
   else if (kind === "frame") { color = theme.edgeFrame; }
 
-  if (highlight) {
+  if (accent) {
+    color = theme.accent;
+    width += 0.6;
+  } else if (highlight) {
     color = kind === "mission" ? theme.edgeHighlightMission : theme.edgeHighlight;
     width += 0.6;
   }
@@ -551,9 +612,10 @@ function drawEdge(from, to, progress, now, kind, highlight) {
 }
 
 function drawNode(node, progress, now) {
-  const color = theme.palette[node.type] || theme.palette.scenario;
+  const selected = node.id === selectedNodeId;
+  const color = selected ? theme.accent : theme.palette[node.type] || theme.palette.scenario;
   const radius = node.r * progress;
-  const active = node.id === selectedNodeId || node.id === hoveredNodeId;
+  const active = selected || node.id === hoveredNodeId;
 
   ctx.save();
 
@@ -568,8 +630,19 @@ function drawNode(node, progress, now) {
   }
 
   ctx.globalAlpha = progress;
+
+  // selection ring in the accent color so the chosen trace stands out
+  if (selected) {
+    ctx.strokeStyle = theme.accent;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, radius + 5, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
   ctx.fillStyle = color;
-  ctx.shadowColor = color;
+  ctx.shadowColor = selected ? theme.accentGlow : color;
   ctx.shadowBlur = active ? 20 : 10;
   ctx.beginPath();
   ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
@@ -695,6 +768,19 @@ function makeCrosses(count) {
   };
   for (let i = 0; i < count; i += 1) {
     out.push({ x: rand(), y: rand(), s: 2 + rand() * 3, p: rand() * 6.28, yellow: rand() > 0.85 });
+  }
+  return out;
+}
+
+function makeFog(count) {
+  const out = [];
+  let seed = 31;
+  const rand = () => {
+    seed = (seed * 9301 + 49297) % 233280;
+    return seed / 233280;
+  };
+  for (let i = 0; i < count; i += 1) {
+    out.push({ x: 0.1 + rand() * 0.8, y: 0.1 + rand() * 0.8, r: 0.16 + rand() * 0.22, p: rand() * 6.28 });
   }
   return out;
 }

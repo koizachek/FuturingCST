@@ -4,11 +4,13 @@ A creativity support tool for reflective multi-horizon futuring
 
 FuturingCST is an interactive prototype for exploring multiple plausible futures around a creative tool, prototype, or research artifact. The user describes the prototype's purpose and context, then the app generates a live graph of influence factors, stakeholder perspectives, 2-, 5-, and 10-year futures, and a backcast mission trace.
 
-The project is framed as a creativity support tool: its purpose is to support reflection, alignment, and articulation around futures a prototype might help make possible.
+The project is framed as a creativity support tool: its purpose is to support reflection, alignment, and articulation around futures a prototype might help make possible. 
 
 <img width="1429" height="834" alt="Bildschirmfoto 2026-06-28 um 22 32 37" src="https://github.com/user-attachments/assets/23e105cf-da7c-4b73-90a4-2ed6e3dae503" />
 
 <img width="1443" height="826" alt="Bildschirmfoto 2026-06-28 um 22 33 13" src="https://github.com/user-attachments/assets/b1c61776-5c50-4e33-8b2f-6660b78c2dac" />
+
+It also comes in a light mode:
 
 
 ## Core Position

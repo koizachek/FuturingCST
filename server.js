@@ -264,6 +264,7 @@ async function handleExtrapolate(req, res) {
       model
     });
   } catch (error) {
+    console.error(`[extrapolate] ${error.message}`);
     send("error", { error: error.publicMessage || "LLM request failed." });
   } finally {
     res.end();
@@ -393,13 +394,17 @@ function clipStringArray(value, count, length) {
 }
 
 async function callLlm(systemPrompt, userContent, apiKey, model, onProgress, options = {}) {
-  try {
-    return await callLlmOnce(systemPrompt, userContent, apiKey, model, onProgress, options);
-  } catch (error) {
-    // One automatic retry when the model returned non-JSON content; other
-    // failures (network, auth, provider errors) surface immediately.
-    if (!error.retryable) throw error;
-    return callLlmOnce(systemPrompt, userContent, apiKey, model, onProgress, options);
+  // Automatic retries with backoff for transient failures: non-JSON content,
+  // upstream rate limits (429), and provider errors (5xx). Auth and network
+  // configuration failures surface immediately.
+  const attempts = 3;
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      return await callLlmOnce(systemPrompt, userContent, apiKey, model, onProgress, options);
+    } catch (error) {
+      if (!error.retryable || attempt >= attempts) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 1500 * attempt));
+    }
   }
 }
 
@@ -443,7 +448,10 @@ async function callLlmOnce(systemPrompt, userContent, apiKey, model, onProgress,
       const detail = await response.text();
       const error = new Error(`LLM request failed with ${response.status}: ${detail}`);
       error.statusCode = 502;
-      error.publicMessage = "LLM request failed. Check provider, model, and API key.";
+      error.retryable = response.status === 429 || response.status >= 500;
+      error.publicMessage = response.status === 429
+        ? "The model is temporarily rate-limited upstream. Try again in a moment."
+        : "LLM request failed. Check provider, model, and API key.";
       throw error;
     }
 
