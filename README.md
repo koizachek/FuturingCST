@@ -10,7 +10,8 @@ The project is framed as a creativity support tool: its purpose is to support re
 
 <img width="1443" height="826" alt="Bildschirmfoto 2026-06-28 um 22 33 13" src="https://github.com/user-attachments/assets/b1c61776-5c50-4e33-8b2f-6660b78c2dac" />
 
-It also comes in a light mode.
+It also comes in light mode.
+<img width="1462" height="835" alt="Bildschirmfoto 2026-07-07 um 02 04 31" src="https://github.com/user-attachments/assets/c05b1f5e-e601-4c7c-977a-290f8ca969e8" />
 
 
 ## Core Position
