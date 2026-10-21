@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://futuringcst-production.up.railway.app/api/:path*"
+      "destination": "https://futuringcst.onrender.com/api/:path*"
     }
   ]
 }
