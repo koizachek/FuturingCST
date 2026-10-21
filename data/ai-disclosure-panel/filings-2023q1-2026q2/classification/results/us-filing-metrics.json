@@ -1,0 +1,892 @@
+{
+  "source": "airo pipeline (src/airo, taxonomy v0.9) with gemini-2.5-flash",
+  "runId": "us-panel-2023-2026",
+  "asOf": "2026-10-21",
+  "chunksTotal": 7227,
+  "chunksClassified": 7215,
+  "invalidRows": 12,
+  "filingsTotal": 1265,
+  "filingsCovered": 1265,
+  "months": [
+    {
+      "month": "2023-03",
+      "filingsTotal": 8,
+      "filings": 8,
+      "aiMentionShare": 0.875,
+      "aiRiskShare": 0.625,
+      "llmAdoptionShare": 0.0,
+      "cyberRiskShare": 0.0,
+      "regulatoryRiskShare": 0.625,
+      "adoptionShare": 0.25,
+      "harmShare": 0.0,
+      "vendorShare": 0.625,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.25,
+        "specific": 0.125,
+        "detailed": 0.5,
+        "quantified": 0.0
+      }
+    },
+    {
+      "month": "2023-04",
+      "filingsTotal": 34,
+      "filings": 34,
+      "aiMentionShare": 0.2941,
+      "aiRiskShare": 0.2059,
+      "llmAdoptionShare": 0.0588,
+      "cyberRiskShare": 0.0294,
+      "regulatoryRiskShare": 0.1471,
+      "adoptionShare": 0.1765,
+      "harmShare": 0.0,
+      "vendorShare": 0.1471,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.0294,
+        "specific": 0.1176,
+        "detailed": 0.1471,
+        "quantified": 0.0
+      }
+    },
+    {
+      "month": "2023-05",
+      "filingsTotal": 47,
+      "filings": 47,
+      "aiMentionShare": 0.2766,
+      "aiRiskShare": 0.234,
+      "llmAdoptionShare": 0.0,
+      "cyberRiskShare": 0.0638,
+      "regulatoryRiskShare": 0.1489,
+      "adoptionShare": 0.0851,
+      "harmShare": 0.0,
+      "vendorShare": 0.1064,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.0638,
+        "specific": 0.1489,
+        "detailed": 0.0638,
+        "quantified": 0.0
+      }
+    },
+    {
+      "month": "2023-06",
+      "filingsTotal": 8,
+      "filings": 8,
+      "aiMentionShare": 1.0,
+      "aiRiskShare": 0.875,
+      "llmAdoptionShare": 0.125,
+      "cyberRiskShare": 0.0,
+      "regulatoryRiskShare": 0.75,
+      "adoptionShare": 0.125,
+      "harmShare": 0.0,
+      "vendorShare": 0.5,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.375,
+        "specific": 0.25,
+        "detailed": 0.375,
+        "quantified": 0.0
+      }
+    },
+    {
+      "month": "2023-07",
+      "filingsTotal": 31,
+      "filings": 31,
+      "aiMentionShare": 0.3548,
+      "aiRiskShare": 0.2581,
+      "llmAdoptionShare": 0.129,
+      "cyberRiskShare": 0.129,
+      "regulatoryRiskShare": 0.1935,
+      "adoptionShare": 0.2581,
+      "harmShare": 0.0,
+      "vendorShare": 0.1613,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.0968,
+        "specific": 0.129,
+        "detailed": 0.129,
+        "quantified": 0.0
+      }
+    },
+    {
+      "month": "2023-08",
+      "filingsTotal": 51,
+      "filings": 51,
+      "aiMentionShare": 0.4118,
+      "aiRiskShare": 0.3725,
+      "llmAdoptionShare": 0.0784,
+      "cyberRiskShare": 0.1373,
+      "regulatoryRiskShare": 0.2745,
+      "adoptionShare": 0.1765,
+      "harmShare": 0.0,
+      "vendorShare": 0.1961,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.098,
+        "specific": 0.098,
+        "detailed": 0.2157,
+        "quantified": 0.0
+      }
+    },
+    {
+      "month": "2023-09",
+      "filingsTotal": 6,
+      "filings": 6,
+      "aiMentionShare": 0.8333,
+      "aiRiskShare": 0.8333,
+      "llmAdoptionShare": 0.1667,
+      "cyberRiskShare": 0.0,
+      "regulatoryRiskShare": 0.8333,
+      "adoptionShare": 0.3333,
+      "harmShare": 0.0,
+      "vendorShare": 0.5,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.1667,
+        "specific": 0.0,
+        "detailed": 0.6667,
+        "quantified": 0.0
+      }
+    },
+    {
+      "month": "2023-10",
+      "filingsTotal": 40,
+      "filings": 40,
+      "aiMentionShare": 0.475,
+      "aiRiskShare": 0.35,
+      "llmAdoptionShare": 0.05,
+      "cyberRiskShare": 0.225,
+      "regulatoryRiskShare": 0.25,
+      "adoptionShare": 0.275,
+      "harmShare": 0.0,
+      "vendorShare": 0.25,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.1,
+        "specific": 0.1,
+        "detailed": 0.25,
+        "quantified": 0.025
+      }
+    },
+    {
+      "month": "2023-11",
+      "filingsTotal": 44,
+      "filings": 44,
+      "aiMentionShare": 0.4318,
+      "aiRiskShare": 0.3636,
+      "llmAdoptionShare": 0.0909,
+      "cyberRiskShare": 0.1364,
+      "regulatoryRiskShare": 0.3182,
+      "adoptionShare": 0.2045,
+      "harmShare": 0.0,
+      "vendorShare": 0.25,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.0455,
+        "specific": 0.1136,
+        "detailed": 0.25,
+        "quantified": 0.0227
+      }
+    },
+    {
+      "month": "2023-12",
+      "filingsTotal": 5,
+      "filings": 5,
+      "aiMentionShare": 0.8,
+      "aiRiskShare": 0.8,
+      "llmAdoptionShare": 0.2,
+      "cyberRiskShare": 0.6,
+      "regulatoryRiskShare": 0.8,
+      "adoptionShare": 0.2,
+      "harmShare": 0.0,
+      "vendorShare": 0.4,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.0,
+        "specific": 0.4,
+        "detailed": 0.4,
+        "quantified": 0.0
+      }
+    },
+    {
+      "month": "2024-01",
+      "filingsTotal": 14,
+      "filings": 14,
+      "aiMentionShare": 0.8571,
+      "aiRiskShare": 0.8571,
+      "llmAdoptionShare": 0.2143,
+      "cyberRiskShare": 0.6429,
+      "regulatoryRiskShare": 0.7143,
+      "adoptionShare": 0.5,
+      "harmShare": 0.0,
+      "vendorShare": 0.5714,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.1429,
+        "specific": 0.1429,
+        "detailed": 0.5,
+        "quantified": 0.0714
+      }
+    },
+    {
+      "month": "2024-02",
+      "filingsTotal": 68,
+      "filings": 68,
+      "aiMentionShare": 0.8824,
+      "aiRiskShare": 0.8676,
+      "llmAdoptionShare": 0.2941,
+      "cyberRiskShare": 0.5882,
+      "regulatoryRiskShare": 0.6618,
+      "adoptionShare": 0.6324,
+      "harmShare": 0.0,
+      "vendorShare": 0.3529,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.1471,
+        "specific": 0.1765,
+        "detailed": 0.5441,
+        "quantified": 0.0147
+      }
+    },
+    {
+      "month": "2024-03",
+      "filingsTotal": 7,
+      "filings": 7,
+      "aiMentionShare": 0.8571,
+      "aiRiskShare": 0.8571,
+      "llmAdoptionShare": 0.2857,
+      "cyberRiskShare": 0.5714,
+      "regulatoryRiskShare": 0.8571,
+      "adoptionShare": 0.4286,
+      "harmShare": 0.0,
+      "vendorShare": 0.5714,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.1429,
+        "specific": 0.1429,
+        "detailed": 0.5714,
+        "quantified": 0.0
+      }
+    },
+    {
+      "month": "2024-04",
+      "filingsTotal": 30,
+      "filings": 30,
+      "aiMentionShare": 0.5667,
+      "aiRiskShare": 0.4333,
+      "llmAdoptionShare": 0.1,
+      "cyberRiskShare": 0.2667,
+      "regulatoryRiskShare": 0.4,
+      "adoptionShare": 0.3667,
+      "harmShare": 0.0,
+      "vendorShare": 0.2333,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.2,
+        "specific": 0.1333,
+        "detailed": 0.2,
+        "quantified": 0.0333
+      }
+    },
+    {
+      "month": "2024-05",
+      "filingsTotal": 53,
+      "filings": 53,
+      "aiMentionShare": 0.5094,
+      "aiRiskShare": 0.4717,
+      "llmAdoptionShare": 0.1509,
+      "cyberRiskShare": 0.2264,
+      "regulatoryRiskShare": 0.3208,
+      "adoptionShare": 0.283,
+      "harmShare": 0.0,
+      "vendorShare": 0.2264,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0189,
+        "generic": 0.1132,
+        "specific": 0.0943,
+        "detailed": 0.283,
+        "quantified": 0.0
+      }
+    },
+    {
+      "month": "2024-06",
+      "filingsTotal": 7,
+      "filings": 7,
+      "aiMentionShare": 1.0,
+      "aiRiskShare": 1.0,
+      "llmAdoptionShare": 0.1429,
+      "cyberRiskShare": 0.7143,
+      "regulatoryRiskShare": 1.0,
+      "adoptionShare": 0.4286,
+      "harmShare": 0.0,
+      "vendorShare": 0.8571,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.0,
+        "specific": 0.2857,
+        "detailed": 0.7143,
+        "quantified": 0.0
+      }
+    },
+    {
+      "month": "2024-07",
+      "filingsTotal": 36,
+      "filings": 36,
+      "aiMentionShare": 0.5556,
+      "aiRiskShare": 0.4444,
+      "llmAdoptionShare": 0.0556,
+      "cyberRiskShare": 0.1944,
+      "regulatoryRiskShare": 0.3333,
+      "adoptionShare": 0.3056,
+      "harmShare": 0.0,
+      "vendorShare": 0.25,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.2222,
+        "specific": 0.0833,
+        "detailed": 0.1944,
+        "quantified": 0.0556
+      }
+    },
+    {
+      "month": "2024-08",
+      "filingsTotal": 45,
+      "filings": 45,
+      "aiMentionShare": 0.5556,
+      "aiRiskShare": 0.5111,
+      "llmAdoptionShare": 0.1556,
+      "cyberRiskShare": 0.3778,
+      "regulatoryRiskShare": 0.3556,
+      "adoptionShare": 0.2667,
+      "harmShare": 0.0,
+      "vendorShare": 0.2444,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.2,
+        "specific": 0.1111,
+        "detailed": 0.2444,
+        "quantified": 0.0
+      }
+    },
+    {
+      "month": "2024-09",
+      "filingsTotal": 7,
+      "filings": 7,
+      "aiMentionShare": 0.8571,
+      "aiRiskShare": 0.8571,
+      "llmAdoptionShare": 0.1429,
+      "cyberRiskShare": 0.4286,
+      "regulatoryRiskShare": 0.8571,
+      "adoptionShare": 0.5714,
+      "harmShare": 0.0,
+      "vendorShare": 0.5714,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.0,
+        "specific": 0.1429,
+        "detailed": 0.7143,
+        "quantified": 0.0
+      }
+    },
+    {
+      "month": "2024-10",
+      "filingsTotal": 49,
+      "filings": 49,
+      "aiMentionShare": 0.5918,
+      "aiRiskShare": 0.5306,
+      "llmAdoptionShare": 0.1429,
+      "cyberRiskShare": 0.2653,
+      "regulatoryRiskShare": 0.4286,
+      "adoptionShare": 0.2857,
+      "harmShare": 0.0,
+      "vendorShare": 0.2245,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.2041,
+        "specific": 0.102,
+        "detailed": 0.2653,
+        "quantified": 0.0204
+      }
+    },
+    {
+      "month": "2024-11",
+      "filingsTotal": 35,
+      "filings": 35,
+      "aiMentionShare": 0.5429,
+      "aiRiskShare": 0.5143,
+      "llmAdoptionShare": 0.2286,
+      "cyberRiskShare": 0.2571,
+      "regulatoryRiskShare": 0.3714,
+      "adoptionShare": 0.3429,
+      "harmShare": 0.0,
+      "vendorShare": 0.3429,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.0571,
+        "specific": 0.1143,
+        "detailed": 0.3429,
+        "quantified": 0.0286
+      }
+    },
+    {
+      "month": "2024-12",
+      "filingsTotal": 5,
+      "filings": 5,
+      "aiMentionShare": 0.8,
+      "aiRiskShare": 0.8,
+      "llmAdoptionShare": 0.0,
+      "cyberRiskShare": 0.8,
+      "regulatoryRiskShare": 0.8,
+      "adoptionShare": 0.6,
+      "harmShare": 0.0,
+      "vendorShare": 0.6,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.0,
+        "specific": 0.2,
+        "detailed": 0.6,
+        "quantified": 0.0
+      }
+    },
+    {
+      "month": "2025-01",
+      "filingsTotal": 14,
+      "filings": 14,
+      "aiMentionShare": 1.0,
+      "aiRiskShare": 0.9286,
+      "llmAdoptionShare": 0.3571,
+      "cyberRiskShare": 0.5,
+      "regulatoryRiskShare": 0.7857,
+      "adoptionShare": 0.6429,
+      "harmShare": 0.0,
+      "vendorShare": 0.5,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.2143,
+        "specific": 0.2143,
+        "detailed": 0.4286,
+        "quantified": 0.1429
+      }
+    },
+    {
+      "month": "2025-02",
+      "filingsTotal": 68,
+      "filings": 68,
+      "aiMentionShare": 0.9265,
+      "aiRiskShare": 0.9118,
+      "llmAdoptionShare": 0.3529,
+      "cyberRiskShare": 0.7794,
+      "regulatoryRiskShare": 0.8088,
+      "adoptionShare": 0.7353,
+      "harmShare": 0.0,
+      "vendorShare": 0.5,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.1029,
+        "specific": 0.0735,
+        "detailed": 0.7353,
+        "quantified": 0.0147
+      }
+    },
+    {
+      "month": "2025-03",
+      "filingsTotal": 9,
+      "filings": 9,
+      "aiMentionShare": 0.8889,
+      "aiRiskShare": 0.8889,
+      "llmAdoptionShare": 0.3333,
+      "cyberRiskShare": 0.6667,
+      "regulatoryRiskShare": 0.8889,
+      "adoptionShare": 0.7778,
+      "harmShare": 0.0,
+      "vendorShare": 0.6667,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.0,
+        "specific": 0.0,
+        "detailed": 0.8889,
+        "quantified": 0.0
+      }
+    },
+    {
+      "month": "2025-04",
+      "filingsTotal": 35,
+      "filings": 35,
+      "aiMentionShare": 0.6286,
+      "aiRiskShare": 0.4571,
+      "llmAdoptionShare": 0.0571,
+      "cyberRiskShare": 0.1714,
+      "regulatoryRiskShare": 0.2857,
+      "adoptionShare": 0.2286,
+      "harmShare": 0.0,
+      "vendorShare": 0.2857,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0286,
+        "generic": 0.1429,
+        "specific": 0.2286,
+        "detailed": 0.1714,
+        "quantified": 0.0571
+      }
+    },
+    {
+      "month": "2025-05",
+      "filingsTotal": 50,
+      "filings": 50,
+      "aiMentionShare": 0.6,
+      "aiRiskShare": 0.54,
+      "llmAdoptionShare": 0.22,
+      "cyberRiskShare": 0.32,
+      "regulatoryRiskShare": 0.44,
+      "adoptionShare": 0.44,
+      "harmShare": 0.0,
+      "vendorShare": 0.3,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.1,
+        "specific": 0.08,
+        "detailed": 0.42,
+        "quantified": 0.0
+      }
+    },
+    {
+      "month": "2025-06",
+      "filingsTotal": 5,
+      "filings": 5,
+      "aiMentionShare": 1.0,
+      "aiRiskShare": 1.0,
+      "llmAdoptionShare": 0.6,
+      "cyberRiskShare": 0.6,
+      "regulatoryRiskShare": 1.0,
+      "adoptionShare": 0.8,
+      "harmShare": 0.0,
+      "vendorShare": 0.4,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.0,
+        "specific": 0.0,
+        "detailed": 0.8,
+        "quantified": 0.2
+      }
+    },
+    {
+      "month": "2025-07",
+      "filingsTotal": 39,
+      "filings": 39,
+      "aiMentionShare": 0.6923,
+      "aiRiskShare": 0.5385,
+      "llmAdoptionShare": 0.1538,
+      "cyberRiskShare": 0.1795,
+      "regulatoryRiskShare": 0.4359,
+      "adoptionShare": 0.3846,
+      "harmShare": 0.0,
+      "vendorShare": 0.3077,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0256,
+        "generic": 0.1795,
+        "specific": 0.2051,
+        "detailed": 0.2564,
+        "quantified": 0.0256
+      }
+    },
+    {
+      "month": "2025-08",
+      "filingsTotal": 42,
+      "filings": 42,
+      "aiMentionShare": 0.5,
+      "aiRiskShare": 0.4524,
+      "llmAdoptionShare": 0.2143,
+      "cyberRiskShare": 0.3095,
+      "regulatoryRiskShare": 0.3333,
+      "adoptionShare": 0.3095,
+      "harmShare": 0.0,
+      "vendorShare": 0.2381,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.1429,
+        "specific": 0.0476,
+        "detailed": 0.2857,
+        "quantified": 0.0238
+      }
+    },
+    {
+      "month": "2025-09",
+      "filingsTotal": 8,
+      "filings": 8,
+      "aiMentionShare": 0.875,
+      "aiRiskShare": 0.875,
+      "llmAdoptionShare": 0.375,
+      "cyberRiskShare": 0.75,
+      "regulatoryRiskShare": 0.875,
+      "adoptionShare": 0.75,
+      "harmShare": 0.0,
+      "vendorShare": 0.75,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.0,
+        "specific": 0.125,
+        "detailed": 0.75,
+        "quantified": 0.0
+      }
+    },
+    {
+      "month": "2025-10",
+      "filingsTotal": 50,
+      "filings": 50,
+      "aiMentionShare": 0.66,
+      "aiRiskShare": 0.52,
+      "llmAdoptionShare": 0.06,
+      "cyberRiskShare": 0.22,
+      "regulatoryRiskShare": 0.32,
+      "adoptionShare": 0.34,
+      "harmShare": 0.0,
+      "vendorShare": 0.28,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.04,
+        "generic": 0.14,
+        "specific": 0.2,
+        "detailed": 0.2,
+        "quantified": 0.08
+      }
+    },
+    {
+      "month": "2025-11",
+      "filingsTotal": 34,
+      "filings": 34,
+      "aiMentionShare": 0.5882,
+      "aiRiskShare": 0.5294,
+      "llmAdoptionShare": 0.2353,
+      "cyberRiskShare": 0.3235,
+      "regulatoryRiskShare": 0.4118,
+      "adoptionShare": 0.4706,
+      "harmShare": 0.0,
+      "vendorShare": 0.3824,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.0882,
+        "specific": 0.0882,
+        "detailed": 0.3824,
+        "quantified": 0.0294
+      }
+    },
+    {
+      "month": "2025-12",
+      "filingsTotal": 6,
+      "filings": 6,
+      "aiMentionShare": 0.8333,
+      "aiRiskShare": 0.8333,
+      "llmAdoptionShare": 0.3333,
+      "cyberRiskShare": 0.8333,
+      "regulatoryRiskShare": 0.8333,
+      "adoptionShare": 0.6667,
+      "harmShare": 0.0,
+      "vendorShare": 0.5,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.0,
+        "specific": 0.0,
+        "detailed": 0.6667,
+        "quantified": 0.1667
+      }
+    },
+    {
+      "month": "2026-01",
+      "filingsTotal": 13,
+      "filings": 13,
+      "aiMentionShare": 0.8462,
+      "aiRiskShare": 0.8462,
+      "llmAdoptionShare": 0.3077,
+      "cyberRiskShare": 0.5385,
+      "regulatoryRiskShare": 0.5385,
+      "adoptionShare": 0.3846,
+      "harmShare": 0.0,
+      "vendorShare": 0.3846,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.3077,
+        "specific": 0.0,
+        "detailed": 0.3077,
+        "quantified": 0.2308
+      }
+    },
+    {
+      "month": "2026-02",
+      "filingsTotal": 67,
+      "filings": 67,
+      "aiMentionShare": 1.0,
+      "aiRiskShare": 0.9552,
+      "llmAdoptionShare": 0.403,
+      "cyberRiskShare": 0.8806,
+      "regulatoryRiskShare": 0.8955,
+      "adoptionShare": 0.9104,
+      "harmShare": 0.0149,
+      "vendorShare": 0.597,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.0299,
+        "specific": 0.0746,
+        "detailed": 0.8657,
+        "quantified": 0.0299
+      }
+    },
+    {
+      "month": "2026-03",
+      "filingsTotal": 11,
+      "filings": 11,
+      "aiMentionShare": 0.9091,
+      "aiRiskShare": 0.9091,
+      "llmAdoptionShare": 0.5455,
+      "cyberRiskShare": 0.7273,
+      "regulatoryRiskShare": 0.9091,
+      "adoptionShare": 0.7273,
+      "harmShare": 0.0,
+      "vendorShare": 0.5455,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.0909,
+        "specific": 0.0,
+        "detailed": 0.6364,
+        "quantified": 0.1818
+      }
+    },
+    {
+      "month": "2026-04",
+      "filingsTotal": 41,
+      "filings": 41,
+      "aiMentionShare": 0.7561,
+      "aiRiskShare": 0.6585,
+      "llmAdoptionShare": 0.122,
+      "cyberRiskShare": 0.3415,
+      "regulatoryRiskShare": 0.4146,
+      "adoptionShare": 0.3902,
+      "harmShare": 0.0,
+      "vendorShare": 0.3659,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.1951,
+        "specific": 0.1463,
+        "detailed": 0.2683,
+        "quantified": 0.1463
+      }
+    },
+    {
+      "month": "2026-05",
+      "filingsTotal": 43,
+      "filings": 43,
+      "aiMentionShare": 0.7674,
+      "aiRiskShare": 0.6279,
+      "llmAdoptionShare": 0.1395,
+      "cyberRiskShare": 0.4186,
+      "regulatoryRiskShare": 0.3721,
+      "adoptionShare": 0.4651,
+      "harmShare": 0.0,
+      "vendorShare": 0.2791,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.186,
+        "specific": 0.2558,
+        "detailed": 0.3256,
+        "quantified": 0.0
+      }
+    },
+    {
+      "month": "2026-06",
+      "filingsTotal": 6,
+      "filings": 6,
+      "aiMentionShare": 1.0,
+      "aiRiskShare": 1.0,
+      "llmAdoptionShare": 0.6667,
+      "cyberRiskShare": 1.0,
+      "regulatoryRiskShare": 1.0,
+      "adoptionShare": 0.8333,
+      "harmShare": 0.0,
+      "vendorShare": 0.8333,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.0,
+        "specific": 0.0,
+        "detailed": 0.8333,
+        "quantified": 0.1667
+      }
+    },
+    {
+      "month": "2026-07",
+      "filingsTotal": 46,
+      "filings": 46,
+      "aiMentionShare": 0.7609,
+      "aiRiskShare": 0.6087,
+      "llmAdoptionShare": 0.1304,
+      "cyberRiskShare": 0.3261,
+      "regulatoryRiskShare": 0.3913,
+      "adoptionShare": 0.4565,
+      "harmShare": 0.0,
+      "vendorShare": 0.3261,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0217,
+        "generic": 0.1957,
+        "specific": 0.1522,
+        "detailed": 0.3043,
+        "quantified": 0.087
+      }
+    },
+    {
+      "month": "2026-08",
+      "filingsTotal": 36,
+      "filings": 36,
+      "aiMentionShare": 0.8333,
+      "aiRiskShare": 0.6389,
+      "llmAdoptionShare": 0.2222,
+      "cyberRiskShare": 0.4722,
+      "regulatoryRiskShare": 0.5278,
+      "adoptionShare": 0.5556,
+      "harmShare": 0.0,
+      "vendorShare": 0.3056,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.25,
+        "specific": 0.0556,
+        "detailed": 0.4444,
+        "quantified": 0.0833
+      }
+    },
+    {
+      "month": "2026-09",
+      "filingsTotal": 7,
+      "filings": 7,
+      "aiMentionShare": 1.0,
+      "aiRiskShare": 0.8571,
+      "llmAdoptionShare": 0.4286,
+      "cyberRiskShare": 0.8571,
+      "regulatoryRiskShare": 0.8571,
+      "adoptionShare": 0.8571,
+      "harmShare": 0.0,
+      "vendorShare": 0.8571,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.0,
+        "specific": 0.0,
+        "detailed": 0.5714,
+        "quantified": 0.4286
+      }
+    },
+    {
+      "month": "2026-10",
+      "filingsTotal": 5,
+      "filings": 5,
+      "aiMentionShare": 0.6,
+      "aiRiskShare": 0.6,
+      "llmAdoptionShare": 0.0,
+      "cyberRiskShare": 0.6,
+      "regulatoryRiskShare": 0.4,
+      "adoptionShare": 0.4,
+      "harmShare": 0.0,
+      "vendorShare": 0.2,
+      "highestSubstantivenessShare": {
+        "boilerplate": 0.0,
+        "generic": 0.2,
+        "specific": 0.2,
+        "detailed": 0.2,
+        "quantified": 0.0
+      }
+    }
+  ]
+}

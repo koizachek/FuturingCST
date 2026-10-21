@@ -1,0 +1,24 @@
+{
+  "coder": "gemini",
+  "model": "gemini-2.5-flash",
+  "tasks": 38,
+  "succeeded": 26,
+  "failed": 0,
+  "deferred": 12,
+  "asked_again": 0,
+  "accepted_after_asking_again": 0,
+  "tokens": {
+    "input_tokens": 59484,
+    "output_tokens": 11725,
+    "thinking_tokens": 0,
+    "total_tokens": 71209
+  },
+  "wall_time_s": 49.217,
+  "latency_s_sum": 49.179,
+  "prices_per_million_tokens": {
+    "input": 0.3,
+    "output": 2.5
+  },
+  "estimated_cost_usd": 0.047158,
+  "failures": []
+}

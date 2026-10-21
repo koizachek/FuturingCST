@@ -1,0 +1,37 @@
+{
+  "coder": "gemini",
+  "model": "gemini-2.5-flash",
+  "tasks": 328,
+  "succeeded": 325,
+  "failed": 3,
+  "deferred": 0,
+  "asked_again": 10,
+  "accepted_after_asking_again": 7,
+  "tokens": {
+    "input_tokens": 482756,
+    "output_tokens": 78777,
+    "thinking_tokens": 0,
+    "total_tokens": 561533
+  },
+  "wall_time_s": 55.48,
+  "latency_s_sum": 365.101,
+  "prices_per_million_tokens": {
+    "input": 0.3,
+    "output": 2.5
+  },
+  "estimated_cost_usd": 0.341769,
+  "failures": [
+    {
+      "passage_id": "09156e8435385fcc:110-117",
+      "error": "rejected by validate: evidence[1] is not a verbatim quote from 09156e8435385fcc:110-117"
+    },
+    {
+      "passage_id": "09156e8435385fcc:384-389",
+      "error": "rejected by validate: evidence[2] is not a verbatim quote from 09156e8435385fcc:384-389"
+    },
+    {
+      "passage_id": "e6ada0818d377462:614-617",
+      "error": "rejected by validate: evidence[0] is not a verbatim quote from e6ada0818d377462:614-617"
+    }
+  ]
+}

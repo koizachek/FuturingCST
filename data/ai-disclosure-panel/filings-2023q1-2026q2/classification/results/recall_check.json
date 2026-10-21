@@ -1,0 +1,9 @@
+{
+  "documents": 1265,
+  "documents_checked": 1265,
+  "documents_affected": 3,
+  "blocks_outside_passages": 3,
+  "by_pattern": {
+    "a_i": 3
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "taxonomy_version": "0.9",
+  "coders": [
+    "gemini"
+  ],
+  "n_passages": 325,
+  "unanimous_share": {
+    "ai_reference": 1.0,
+    "frame": 1.0,
+    "adoption_stage": 1.0,
+    "substantiveness": 1.0,
+    "roles": 1.0,
+    "risk_types": 1.0,
+    "mit_subdomains": 1.0,
+    "ai_kinds": 1.0,
+    "business_functions": 1.0,
+    "governance_responses": 1.0,
+    "disclosure_traits": 1.0
+  },
+  "pairwise_identical_label_share": null,
+  "needs_review": []
+}
