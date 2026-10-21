@@ -957,3 +957,16 @@ textarea {
 .chat-message.user {
   font-size: 17px;
 }
+
+/* the modal sits in the top layer above the custom cursor, so it shows the native one */
+@media (pointer: fine) {
+  .about-dialog,
+  .about-dialog *,
+  .about-dialog::backdrop {
+    cursor: auto !important;
+  }
+
+  .about-dialog button {
+    cursor: pointer !important;
+  }
+}
