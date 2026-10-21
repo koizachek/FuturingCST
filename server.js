@@ -33,7 +33,8 @@ const server = http.createServer(async (req, res) => {
         ok: true,
         provider: getProviderName(),
         configured: Boolean(getApiKey()),
-        model: getModelName() || null
+        model: getModelName() || null,
+        logging: { configured: Boolean(getLogCollection()), ...logStatus }
       });
       return;
     }
@@ -372,6 +373,7 @@ async function handleRating(req, res) {
 // MongoDB logging of inputs, outputs, ratings, and chats; a no-op when the
 // MONGODB_* variables are missing, and a failed write never fails a request.
 let logCollection;
+const logStatus = { lastWriteAt: null, lastError: null };
 
 function getLogCollection() {
   if (logCollection !== undefined) return logCollection;
@@ -392,7 +394,11 @@ function logEvent(type, data) {
   const collection = getLogCollection();
   if (!collection) return;
   collection.insertOne({ type, createdAt: new Date(), ...data })
-    .catch((error) => console.error(`[mongodb] ${type} log failed: ${error.message}`));
+    .then(() => { logStatus.lastWriteAt = new Date().toISOString(); logStatus.lastError = null; })
+    .catch((error) => {
+      logStatus.lastError = error.message;
+      console.error(`[mongodb] ${type} log failed: ${error.message}`);
+    });
 }
 
 function sanitizeInput(input) {
