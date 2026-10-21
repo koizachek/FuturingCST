@@ -30,6 +30,7 @@ let hoveredNodeId = null;
 let preferredScenarioId = null;
 let frameId = null;
 let chatThreads = new Map();
+let ratings = new Map();
 let generationComplete = false;
 let animationOn = false;
 let fontsLoaded = false;
@@ -117,11 +118,11 @@ let themeName = "dark";
 let theme = THEMES.dark;
 
 const typeLabels = {
-  root: "PROTOTYPE",
-  factor: "FACTOR",
+  root: "FOCAL ISSUE",
+  factor: "DRIVING FORCE",
   perspective: "PERSPECTIVE",
   scenario: "SCENARIO",
-  mission: "MISSION"
+  mission: "IMPLICATION"
 };
 
 const HORIZON_COLUMNS = [
@@ -149,6 +150,7 @@ canvas.addEventListener("mouseleave", () => {
 });
 form.addEventListener("submit", submitForm);
 resultPanel.addEventListener("click", handleResultClick);
+selectionPanel.addEventListener("click", handleRatingClick);
 mobileResults.addEventListener("click", handleResultClick);
 detailPanel.addEventListener("submit", handleChatSubmit);
 mobileMedia.addEventListener("change", handleViewportChange);
@@ -178,6 +180,7 @@ async function submitForm(event) {
   selectedNodeId = null;
   preferredScenarioId = null;
   chatThreads = new Map();
+  ratings = new Map();
   generationComplete = false;
   mobileResults.hidden = true;
   mobileResults.innerHTML = "";
@@ -273,9 +276,9 @@ function handleViewportChange() {
 }
 
 function stageTitle(stage) {
-  if (stage === "frame") return "Reading frame";
+  if (stage === "frame") return "Reading focal issue";
   if (stage === "horizons") return "Extrapolating 2/5/10-year futures";
-  if (stage === "mission") return "Outlining mission";
+  if (stage === "mission") return "Deriving implications";
   if (typeof stage === "string" && stage.startsWith("horizon-")) return `Extrapolating ${stage.slice(8)}-year futures`;
   return "Extrapolating";
 }
@@ -765,11 +768,11 @@ function drawLabel(node, color, progress, active) {
 function drawLegend(width, height) {
   if (!graph.nodes.length) return;
   const items = [
-    ["root", "Prototype"],
-    ["factor", "Influence factor"],
+    ["root", "Focal issue"],
+    ["factor", "Driving force"],
     ["perspective", "Perspective"],
     ["scenario", "Scenario"],
-    ["mission", "Mission step"]
+    ["mission", "Implication"]
   ];
   ctx.save();
   ctx.font = "12px 'Space Mono', ui-monospace, monospace";
@@ -898,7 +901,7 @@ function renderMobileResults() {
 
   const missionBlock = (data.mission || []).length ? `
     <div class="result-block">
-      <h2>Mission trace</h2>
+      <h2>Implications</h2>
       <ul>
         ${(data.mission || []).map((step) => `
           <li><strong>${escapeHtml(step.horizon || "")}</strong>: ${escapeHtml(step.action || "")}</li>
@@ -912,7 +915,7 @@ function renderMobileResults() {
       <p>${escapeHtml(data.reading || "")}</p>
     </div>
     <div class="result-block">
-      <h2>Influence factors</h2>
+      <h2>Driving forces</h2>
       <ul>${factors}</ul>
     </div>
     <div class="result-block">
@@ -945,7 +948,7 @@ function renderResult(data) {
 
   const missionBlock = (data.mission || []).length ? `
     <div class="result-block">
-      <h2>Mission trace</h2>
+      <h2>Implications</h2>
       <ul>
         ${(data.mission || []).map((step) => `
           <li><strong>${escapeHtml(step.horizon || "")}</strong>: ${escapeHtml(step.action || "")}</li>
@@ -959,7 +962,7 @@ function renderResult(data) {
       <p>${escapeHtml(data.reading)}</p>
     </div>
     <div class="result-block">
-      <h2>Influence factors</h2>
+      <h2>Driving forces</h2>
       <ul>
         ${(data.influenceFactors || []).map((factor) => `
           <li><strong>${escapeHtml(factor.label || factor.id)}</strong>: ${escapeHtml(factor.rationale || "")}</li>
@@ -999,9 +1002,11 @@ function renderSelection() {
     const payload = node.payload || {};
     content = header(`${payload.years || ""}y scenario`, payload.title || node.label) +
       `<p>${escapeHtml(payload.summary || "")}</p>` +
-      renderMiniList("Signals", payload.signals) +
+      renderMiniList("Indicators", payload.signals) +
+      (payload.outsideBandReason ? `<p class="metadata-line">outside band: ${escapeHtml(payload.outsideBandReason)}</p>` : "") +
       renderMiniList("Risks", payload.risks) +
-      renderMiniList("Open questions", payload.openQuestions);
+      renderMiniList("Open questions", payload.openQuestions) +
+      renderRatings(node.id);
   }
 
   selectionPanel.innerHTML = content;
@@ -1144,7 +1149,8 @@ function buildTraceContext(node) {
     concern: payload.concern || "",
     signals: payload.signals || [],
     risks: payload.risks || [],
-    openQuestions: payload.openQuestions || []
+    openQuestions: payload.openQuestions || [],
+    outsideBandReason: payload.outsideBandReason || ""
   };
 
   if (node.type === "scenario") {
@@ -1167,6 +1173,35 @@ function header(tag, title) {
       <span>${escapeHtml(tag)}</span>
       <h2>${escapeHtml(title || "")}</h2>
     </div>`;
+}
+
+const RATING_CRITERIA = [["plausibility", "Plausibility"], ["desirability", "Desirability"]];
+
+// participants rate each scenario 1-5; kept in memory for the current run
+function renderRatings(scenarioId) {
+  const current = ratings.get(scenarioId) || {};
+  return `
+    <div class="mini-list ratings">
+      <h3>Your rating</h3>
+      ${RATING_CRITERIA.map(([key, label]) => `
+        <div class="rating-row">
+          <span>${label}</span>
+          ${[1, 2, 3, 4, 5].map((value) => `
+            <button type="button" class="${current[key] === value ? "selected" : ""}" data-rating="${key}" data-value="${value}">${value}</button>
+          `).join("")}
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function handleRatingClick(event) {
+  const button = event.target.closest("[data-rating]");
+  if (!button || !selectedNodeId) return;
+  const current = ratings.get(selectedNodeId) || {};
+  current[button.dataset.rating] = Number(button.dataset.value);
+  ratings.set(selectedNodeId, current);
+  renderSelection();
 }
 
 function renderMiniList(title, items) {

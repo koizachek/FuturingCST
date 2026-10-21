@@ -193,7 +193,7 @@ async function handleExtrapolate(req, res) {
 
   try {
     // Stage 1 — frame: title, reading, influence factors, perspectives.
-    send("stage", { stage: "frame", label: "Reading the prototype frame" });
+    send("stage", { stage: "frame", label: "Reading the focal issue" });
     const frameRaw = await callLlm(
       buildFramePrompt(),
       payload,
@@ -237,11 +237,11 @@ async function handleExtrapolate(req, res) {
       send("horizon", { years, scenarios });
     }
 
-    // Stage 5 — mission: backcasting from the surfaced scenarios.
-    send("stage", { stage: "mission", label: "Outlining a mission" });
+    // Stage 5 — implications of the surfaced scenarios.
+    send("stage", { stage: "mission", label: "Deriving implications" });
     const missionRaw = await callLlm(
       buildMissionPrompt(),
-      { input: payload, scenarios: allScenarios.map((s) => ({ id: s.id, title: s.title, years: s.years })) },
+      { input: payload, scenarios: allScenarios.map((s) => ({ id: s.id, title: s.title, years: s.years, summary: s.summary })) },
       apiKey,
       model,
       (progress) => send("progress", { stage: "mission", ...progress })
@@ -311,19 +311,19 @@ async function handleTraceChat(req, res) {
 
 function sanitizeInput(input) {
   const purpose = stringField(input.purpose, 1600);
-  const context = stringField(input.context, 2400);
+  const assumptions = stringField(input.assumptions, 2400);
   const stakeholders = stringField(input.stakeholders, 1200);
   const signals = stringField(input.signals, 1200);
 
-  if (purpose.length < 12 || context.length < 12) {
-    const error = new Error("Purpose and context are required.");
+  if (purpose.length < 12) {
+    const error = new Error("Purpose is required.");
     error.statusCode = 400;
-    error.publicMessage = "Please provide more detail for Purpose and Context.";
+    error.publicMessage = "Please provide more detail for Purpose.";
     throw error;
   }
 
   const sector = Object.hasOwn(SECTORS, input.sector) ? input.sector : "manufacturing";
-  return { purpose, context, stakeholders, signals, sector: SECTORS[sector], timestral: sectorForecast(sector) };
+  return { sector: SECTORS[sector], purpose, assumptions, stakeholders, signals, timestral: sectorForecast(sector) };
 }
 
 // Timestral 10-90 % bands per measure and horizon, precomputed from the scenarioGPT data
@@ -378,7 +378,7 @@ function sanitizeProjectContext(project = {}) {
     reading: stringField(project.reading, 360),
     sector: stringField(input.sector, 80),
     purpose: stringField(input.purpose, 600),
-    context: stringField(input.context, 700),
+    assumptions: stringField(input.assumptions, 700),
     stakeholders: stringField(input.stakeholders, 360),
     signals: stringField(input.signals, 360)
   };
@@ -398,6 +398,7 @@ function sanitizeTraceContext(trace = {}) {
     signals: clipStringArray(trace.signals, 6, 180),
     risks: clipStringArray(trace.risks, 6, 180),
     openQuestions: clipStringArray(trace.openQuestions, 6, 220),
+    outsideBandReason: stringField(trace.outsideBandReason, 400),
     relatedFactors: arrayOfObjects(trace.relatedFactors).slice(0, 4).map((factor) => ({
       label: stringField(factor.label, 100),
       rationale: stringField(factor.rationale, 240),
@@ -565,13 +566,22 @@ function parseJsonContent(content) {
 }
 
 const SHARED_RULES = `
-You are the backend reasoning engine for FuturingCST, a creativity support tool for reflective multi-horizon futuring.
+You are the backend reasoning engine for FuturingCST, a strategy support tool for reflective multi-horizon futuring.
+It supports CIOs and CTOs in a scenario workshop on AI adoption, AI risk, and AI use in their sector.
 Return only valid JSON. Do not include markdown.
+
+Terms:
+- Focal issue: the selected sector together with the user's question (purpose).
+- Driving forces: the forces that shape the focal issue (returned as influenceFactors).
+- Uncertainties: the most important and most uncertain driving forces; scenarios diverge along them.
+- Indicators: observable values that show which scenario is unfolding (returned as signals).
+- Implications: what a scenario means for CIOs and CTOs in the sector.
 
 Hard rules:
 - Never predict one future. Always surface multiple plausible futures.
 - Treat the output as reflection support, alignment support, and articulation support.
-- Use the user's sector, purpose, and context as the only project-specific source.
+- Use the user's sector, purpose, assumptions, and the Timestral forecasts as the only project-specific sources.
+- The user's assumptions are human judgement. Take them seriously and combine them with the forecast bands.
 - The input carries Timestral forecasts for the selected sector: 10-90 % bands per measure for the 2-, 5-, and 10-year horizons. They measure what 30 large US firms report about AI in SEC filings, not verified adoption. Use the bands to spread the scenarios across the possibility space; they are not scenario probabilities.
 - Do not invent citations, URLs, statistics, or claims of current factual certainty.
 `.trim();
@@ -579,27 +589,29 @@ Hard rules:
 function buildFramePrompt() {
   return `${SHARED_RULES}
 
-Task: read the prototype and surface its futuring frame.
+Task: read the focal issue and surface its driving forces and the perspectives of those affected.
 
 Return JSON:
 {
   "title": "short project label (max 6 words)",
-  "reading": "one concise sentence describing the futuring frame",
+  "reading": "one concise sentence describing the focal issue",
   "influenceFactors": [
-    { "label": "short label", "category": "technical|social|economic|institutional|cultural|ecological|ethical", "rationale": "why this factor matters", "uncertainty": "low|medium|high" }
+    { "label": "short driving force label", "category": "technical|social|economic|institutional|cultural|ecological|ethical", "rationale": "why this driving force matters for the focal issue", "uncertainty": "low|medium|high" }
   ],
   "perspectives": [
-    { "label": "short stakeholder or worldview label", "concern": "what this perspective watches for" }
+    { "label": "short stakeholder or worldview label relevant to CIOs and CTOs in the sector", "concern": "what this perspective watches for" }
   ]
 }
 
-Cardinality: exactly 4 influenceFactors and exactly 3 perspectives. Keep every string short.`;
+Cardinality: exactly 4 influenceFactors and exactly 3 perspectives. Mark the 2 most uncertain driving forces as "high" uncertainty. Keep every string short.`;
 }
 
 function buildHorizonPrompt(years) {
   return `${SHARED_RULES}
 
-Task: given the project frame, influence factors, and perspectives, produce exactly 2 plausible (not predicted) scenarios for the ${years}-year horizon. The two scenarios must diverge from each other.
+Task: given the focal issue, driving forces, and perspectives, produce exactly 2 plausible (not predicted) scenarios for the ${years}-year horizon. The two scenarios must diverge from each other along the uncertainties (the driving forces with high uncertainty).
+Anchor the divergence in the Timestral bands for the ${years}y horizon: one scenario toward the lower part of the band of the most relevant measures, the other toward the upper part.
+If the user's assumptions push a scenario outside a band, keep the assumption and state the reason in outsideBandReason; otherwise leave it empty.
 
 Return JSON:
 {
@@ -610,29 +622,30 @@ Return JSON:
       "summary": "2-3 sentences describing this plausible future",
       "factorIds": ["ids chosen ONLY from the provided influenceFactors"],
       "perspectiveIds": ["ids chosen ONLY from the provided perspectives"],
-      "signals": ["observable early signal"],
+      "signals": ["indicator: measure name and the value range this scenario assumes, e.g. \"Share of firms reporting LLM adoption: 0.20-0.35\""],
       "risks": ["risk"],
-      "openQuestions": ["question for reflection"]
+      "openQuestions": ["question for reflection"],
+      "outsideBandReason": "why the user's assumptions place this scenario outside a Timestral band, or empty"
     }
   ]
 }
 
-Use 1-3 factorIds and 1-2 perspectiveIds per scenario, referencing the exact ids given. Exactly 2 scenarios.`;
+Use 1-3 factorIds and 1-2 perspectiveIds per scenario, referencing the exact ids given. Give 2-3 indicators per scenario. Exactly 2 scenarios.`;
 }
 
 function buildMissionPrompt() {
   return `${SHARED_RULES}
 
-Task: given the project and the surfaced scenarios across horizons, outline a mission by backcasting from a preferred direction.
+Task: given the focal issue and the surfaced scenarios across horizons, derive the implications: what the scenarios mean for CIOs and CTOs in the sector.
 
 Return JSON:
 {
   "mission": [
-    { "fromScenarioId": "id chosen ONLY from the provided scenarios", "horizon": "now|2y|5y|10y", "action": "concrete backcasting action", "reason": "why this action follows" }
+    { "fromScenarioId": "id chosen ONLY from the provided scenarios", "horizon": "2y|5y|10y", "action": "concrete implication for CIOs and CTOs", "reason": "why this implication follows from the scenario" }
   ]
 }
 
-Exactly 4 mission steps. Each fromScenarioId must be one of the provided scenario ids.`;
+Exactly 4 implications. Each fromScenarioId must be one of the provided scenario ids.`;
 }
 
 function buildTraceChatPrompt() {
@@ -641,7 +654,7 @@ function buildTraceChatPrompt() {
 Task: answer one follow-up question as a critical futuring interlocutor for the selected trace.
 
 Scope rules:
-- Discuss only the selected trace, its related factors or perspectives, and the user's submitted prototype frame.
+- Discuss only the selected trace, its related factors or perspectives, and the user's focal issue and assumptions.
 - Ground every answer in at least one concrete detail from the selected trace: its title, horizon, orientation, summary, signals, risks, open questions, related factors, or related perspectives.
 - If the user asks a broad or vague question, interpret it as a request to pressure-test the selected trace.
 - Make critical engagement possible: surface assumptions, tensions, blind spots, distribution of agency, stakeholder conflicts, risks, and counter-perspectives.
@@ -691,7 +704,8 @@ function normalizeScenarios(rawScenarios, years, factorIds, perspectiveIds) {
     perspectiveIds: arrayOfStrings(scenario.perspectiveIds).filter((value) => perspectiveIds.has(value)),
     signals: arrayOfStrings(scenario.signals),
     risks: arrayOfStrings(scenario.risks),
-    openQuestions: arrayOfStrings(scenario.openQuestions)
+    openQuestions: arrayOfStrings(scenario.openQuestions),
+    outsideBandReason: stringOr(scenario.outsideBandReason, "")
   }));
 }
 
