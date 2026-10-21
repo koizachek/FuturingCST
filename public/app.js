@@ -710,7 +710,7 @@ function drawNode(node, progress, now) {
 function drawLabel(node, color, progress, active) {
   const tag = typeLabels[node.type] || "NODE";
   const text = truncate(node.label || node.id, labelMax[node.type] || 22);
-  const coord = active ? `${node.nx.toFixed(2)} / ${node.ny.toFixed(2)}` : "";
+  const coord = "";
 
   const tagFont = "11px 'Space Mono', ui-monospace, monospace";
   const big = node.type === "scenario";

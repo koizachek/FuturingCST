@@ -39,19 +39,16 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === "POST" && url.pathname === "/api/extrapolate") {
-      enforceRateLimit(req, "extrapolate", Number(process.env.RATE_LIMIT_EXTRAPOLATE || 10));
       await handleExtrapolate(req, res);
       return;
     }
 
     if (req.method === "POST" && url.pathname === "/api/chat") {
-      enforceRateLimit(req, "chat", Number(process.env.RATE_LIMIT_CHAT || 60));
       await handleTraceChat(req, res);
       return;
     }
 
     if (req.method === "POST" && url.pathname === "/api/rating") {
-      enforceRateLimit(req, "rating", Number(process.env.RATE_LIMIT_CHAT || 60));
       await handleRating(req, res);
       return;
     }
