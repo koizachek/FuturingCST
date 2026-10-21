@@ -71,6 +71,7 @@
         </form>
 
         <div id="status" class="status-line" role="status">LLM connection idle.</div>
+        <button type="button" id="about-open" class="about-button">About &amp; how to use</button>
       </section>
 
       <section class="canvas-stage" aria-label="Futures graph">
@@ -87,6 +88,39 @@
         </div>
       </aside>
     </main>
+
+    <dialog id="about-dialog" class="about-dialog" aria-labelledby="about-title">
+      <div class="about-head">
+        <h2 id="about-title">About FuturingCST</h2>
+        <button type="button" class="close-detail" id="about-close" aria-label="Close">×</button>
+      </div>
+      <p>FuturingCST supports scenario workshops on AI adoption, AI risk, and AI use in manufacturing, banking, and IT. It does not predict one future. It shows two divergent scenarios per horizon (2, 5, and 10 years) to discuss and assess.</p>
+
+      <h3>How to use</h3>
+      <ol>
+        <li>Choose a sector.</li>
+        <li>Choose a question under Purpose, or select Other and write your own.</li>
+        <li>Optional: add your assumptions, the stakeholders whose perspectives matter to you, and signals you consider relevant.</li>
+        <li>Click Begin extrapolation. The graph grows from the focal issue over driving forces and perspectives to the scenarios at 2, 5, and 10 years and their implications.</li>
+        <li>Click a scenario (the large ringed nodes) to read it. Rate it for plausibility and desirability from 1 to 5, and ask follow-up questions in the chat. Close the panel with ×.</li>
+      </ol>
+
+      <h3>Where the scenarios come from</h3>
+      <ul>
+        <li><strong>Data:</strong> AI disclosures of 30 large US-listed firms per sector in their SEC 10-K and 10-Q filings, 2023 Q1 to 2026 Q2. Every AI passage was classified by use, risk type, AI kind, and governance response.</li>
+        <li><strong>Critical uncertainties:</strong> per sector, two fast-moving disclosure measures (for example generative AI uptake and AI fraud risk in banking). Each can be accelerating (the measured trend continues) or stalling (it stays at today's level).</li>
+        <li><strong>Timestral:</strong> Mistral's time-series model forecasts the sector's other measures separately for each scenario, conditioned on that scenario's driver outcomes. The indicators show the median and the 10-90 % band.</li>
+        <li><strong>Language model:</strong> writes the narrative of each scenario from these numbers, the sector evidence, and your input. Values outside the forecast band are flagged.</li>
+      </ul>
+
+      <h3>Read with care</h3>
+      <ul>
+        <li>The data measure what firms report, not verified adoption or incidents.</li>
+        <li>30 firms per sector and 14 quarters: one firm is about 3 percentage points. Beyond two years the forecast bands become very wide.</li>
+        <li>Bands describe a measured variable, not the probability of a scenario.</li>
+        <li>The numbers next to nodes in the graph are canvas positions, not data.</li>
+      </ul>
+    </dialog>
 
     <script src="/app.js" type="module"></script>
   </body>

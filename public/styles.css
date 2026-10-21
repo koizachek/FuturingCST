@@ -70,7 +70,7 @@ select {
 }
 
 .app-shell.detail-open {
-  grid-template-columns: minmax(280px, 360px) minmax(420px, 1fr) minmax(300px, 380px);
+  grid-template-columns: minmax(280px, 360px) minmax(360px, 1fr) max(440px, 40vw);
 }
 
 .control-panel,
@@ -211,6 +211,74 @@ label span {
   color: var(--muted);
   font-size: 14px;
   text-transform: uppercase;
+}
+
+.about-button {
+  margin-top: auto;
+  padding: 8px 12px;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 14px;
+}
+
+.about-button:hover {
+  color: var(--text);
+  border-color: var(--line-strong);
+}
+
+.about-dialog {
+  width: min(720px, calc(100vw - 32px));
+  max-height: calc(100vh - 64px);
+  padding: 24px 28px;
+  color: var(--text);
+  background: var(--panel-strong);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  overflow-y: auto;
+}
+
+.about-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.about-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.about-dialog h2 {
+  font-size: 21px;
+  font-weight: 400;
+}
+
+.about-dialog h3 {
+  margin: 20px 0 8px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.about-dialog p,
+.about-dialog li {
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.about-dialog ol,
+.about-dialog ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.about-dialog li {
+  margin-bottom: 6px;
 }
 
 .sector-tabs {
@@ -429,7 +497,52 @@ select:focus {
 
 .selection-header {
   display: grid;
-  gap: 4px;
+  grid-template-columns: 1fr auto;
+  gap: 4px 12px;
+  align-items: start;
+}
+
+.selection-header span,
+.selection-header h2 {
+  grid-column: 1;
+}
+
+.close-detail {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  padding: 4px 10px;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.close-detail:hover {
+  color: var(--text);
+  border-color: var(--line-strong);
+}
+
+.narrative p {
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0 0 12px;
+}
+
+.data-block summary {
+  color: var(--muted);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.data-block ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.data-block li {
+  font-size: 13px !important;
 }
 
 .selection-header span {
@@ -440,7 +553,7 @@ select:focus {
 }
 
 .selection-header h2 {
-  font-size: 17px;
+  font-size: 21px;
   font-weight: 400;
 }
 
@@ -816,4 +929,31 @@ select:focus {
 
 :root[data-theme="light"] .trace-chip {
   background: rgba(250, 248, 242, 0.5);
+}
+
+/* user-written text and scenario narratives in a serif face */
+textarea,
+.chat-message.user,
+.narrative p,
+.about-dialog p,
+.about-dialog li {
+  font-family: "Times New Roman", Times, serif;
+}
+
+/* Times New Roman text 2px larger than the surrounding monospace sizes */
+textarea {
+  font-size: 20px;
+}
+
+.narrative p {
+  font-size: 18px;
+}
+
+.about-dialog p,
+.about-dialog li {
+  font-size: 19px;
+}
+
+.chat-message.user {
+  font-size: 17px;
 }

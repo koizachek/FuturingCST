@@ -1,0 +1,1801 @@
+{
+ "model_id": "mistralai/Timestral-28M",
+ "generated_at": "2026-10-21T20:54:33.610303+00:00",
+ "horizons": {
+  "2y": 2028,
+  "5y": 2031,
+  "10y": 2036
+ },
+ "interval": {
+  "lower": 0.1,
+  "upper": 0.9
+ },
+ "method": "scenarioGPT generation.py: one Timestral run per driver-outcome combination; known covariates = time index + driver paths; accelerating = observed linear slope per quarter, stalling = hold last value; values clipped to bounds.",
+ "sectors": {
+  "manufacturing": {
+   "drivers": [
+    {
+     "series_id": "series-C-bf_operations",
+     "name": "Own AI use in operations",
+     "series_name": "Manufacturing: Share of firms disclosing own AI use in operations and service delivery",
+     "values": [
+      0.0,
+      0.0,
+      0.0,
+      0.1667,
+      0.1667,
+      0.2,
+      0.2,
+      0.2667,
+      0.3,
+      0.3333,
+      0.3667,
+      0.3667,
+      0.3667,
+      0.4333
+     ],
+     "dates": [
+      "2023-03-31",
+      "2023-06-30",
+      "2023-09-30",
+      "2023-12-31",
+      "2024-03-31",
+      "2024-06-30",
+      "2024-09-30",
+      "2024-12-31",
+      "2025-03-31",
+      "2025-06-30",
+      "2025-09-30",
+      "2025-12-31",
+      "2026-03-31",
+      "2026-06-30"
+     ]
+    },
+    {
+     "series_id": "series-C-mit_ai_system_security_vulnerabilities_attacks",
+     "name": "AI system security risk",
+     "series_name": "Manufacturing: Share of firms disclosing AI risk: AI system security vulnerabilities and attacks (MIT 2.2)",
+     "values": [
+      0.0667,
+      0.0333,
+      0.1,
+      0.4,
+      0.4333,
+      0.5,
+      0.5,
+      0.6,
+      0.6,
+      0.6,
+      0.6667,
+      0.7333,
+      0.7667,
+      0.7333
+     ],
+     "dates": [
+      "2023-03-31",
+      "2023-06-30",
+      "2023-09-30",
+      "2023-12-31",
+      "2024-03-31",
+      "2024-06-30",
+      "2024-09-30",
+      "2024-12-31",
+      "2025-03-31",
+      "2025-06-30",
+      "2025-09-30",
+      "2025-12-31",
+      "2026-03-31",
+      "2026-06-30"
+     ]
+    }
+   ],
+   "backtest": {
+    "holdout": 3,
+    "inside": 16,
+    "observed": 24
+   },
+   "scenarios": [
+    {
+     "configuration": [
+      {
+       "driver": "Own AI use in operations",
+       "series_id": "series-C-bf_operations",
+       "outcome": "accelerating",
+       "change_per_quarter": 0.0342,
+       "last_observed": 0.4333
+      },
+      {
+       "driver": "AI system security risk",
+       "series_id": "series-C-mit_ai_system_security_vulnerabilities_attacks",
+       "outcome": "stalling",
+       "change_per_quarter": 0.0,
+       "last_observed": 0.7333
+      }
+     ],
+     "assumption": "Own AI use in operations: accelerating; AI system security risk: stalling",
+     "by_horizon": {
+      "2y": [
+       {
+        "series_id": "series-C-bf_rd_product",
+        "name": "Share of firms disclosing own AI use in R&D, engineering and product development",
+        "last_observed": 0.6,
+        "date": "2028-12-31",
+        "lower": 0.5202,
+        "median": 0.9917,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-kind_generative_llm",
+        "name": "Share of firms disclosing generative AI or LLMs",
+        "last_observed": 0.6,
+        "date": "2028-12-31",
+        "lower": 0.4601,
+        "median": 0.7608,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-kind_agentic",
+        "name": "Share of firms disclosing agentic AI",
+        "last_observed": 0.2667,
+        "date": "2028-12-31",
+        "lower": 0.1743,
+        "median": 0.4337,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-share_vendor",
+        "name": "Share of firms naming an AI vendor",
+        "last_observed": 0.4,
+        "date": "2028-12-31",
+        "lower": 0.2933,
+        "median": 0.4015,
+        "upper": 0.5434
+       },
+       {
+        "series_id": "series-C-risk_third_party",
+        "name": "Share of firms disclosing AI third-party (vendor) risk",
+        "last_observed": 0.2667,
+        "date": "2028-12-31",
+        "lower": 0.1968,
+        "median": 0.4435,
+        "upper": 0.8688
+       },
+       {
+        "series_id": "series-C-gov_policies_processes",
+        "name": "Share of firms disclosing AI policies or processes (policy, assessment, approval)",
+        "last_observed": 0.2667,
+        "date": "2028-12-31",
+        "lower": 0.2137,
+        "median": 0.3997,
+        "upper": 0.6889
+       },
+       {
+        "series_id": "series-C-mit_regulation_lagging_behind_ai",
+        "name": "Share of firms disclosing AI risk: regulation lagging behind AI (MIT 6.5)",
+        "last_observed": 0.6333,
+        "date": "2028-12-31",
+        "lower": 0.4524,
+        "median": 0.8082,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-risk_operational_reliability",
+        "name": "Share of firms disclosing AI operational-reliability risk",
+        "last_observed": 0.7333,
+        "date": "2028-12-31",
+        "lower": 0.5422,
+        "median": 0.7369,
+        "upper": 1.0
+       }
+      ],
+      "5y": [
+       {
+        "series_id": "series-C-bf_rd_product",
+        "name": "Share of firms disclosing own AI use in R&D, engineering and product development",
+        "last_observed": 0.6,
+        "date": "2031-12-31",
+        "lower": 0.5103,
+        "median": 1.0,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-kind_generative_llm",
+        "name": "Share of firms disclosing generative AI or LLMs",
+        "last_observed": 0.6,
+        "date": "2031-12-31",
+        "lower": 0.4065,
+        "median": 0.8878,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-kind_agentic",
+        "name": "Share of firms disclosing agentic AI",
+        "last_observed": 0.2667,
+        "date": "2031-12-31",
+        "lower": 0.1482,
+        "median": 0.5406,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-share_vendor",
+        "name": "Share of firms naming an AI vendor",
+        "last_observed": 0.4,
+        "date": "2031-12-31",
+        "lower": 0.232,
+        "median": 0.4015,
+        "upper": 0.6062
+       },
+       {
+        "series_id": "series-C-risk_third_party",
+        "name": "Share of firms disclosing AI third-party (vendor) risk",
+        "last_observed": 0.2667,
+        "date": "2031-12-31",
+        "lower": 0.1853,
+        "median": 0.6032,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-gov_policies_processes",
+        "name": "Share of firms disclosing AI policies or processes (policy, assessment, approval)",
+        "last_observed": 0.2667,
+        "date": "2031-12-31",
+        "lower": 0.1901,
+        "median": 0.5019,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-mit_regulation_lagging_behind_ai",
+        "name": "Share of firms disclosing AI risk: regulation lagging behind AI (MIT 6.5)",
+        "last_observed": 0.6333,
+        "date": "2031-12-31",
+        "lower": 0.3821,
+        "median": 0.9151,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-risk_operational_reliability",
+        "name": "Share of firms disclosing AI operational-reliability risk",
+        "last_observed": 0.7333,
+        "date": "2031-12-31",
+        "lower": 0.4269,
+        "median": 0.7403,
+        "upper": 1.0
+       }
+      ],
+      "10y": [
+       {
+        "series_id": "series-C-bf_rd_product",
+        "name": "Share of firms disclosing own AI use in R&D, engineering and product development",
+        "last_observed": 0.6,
+        "date": "2036-12-31",
+        "lower": 0.3697,
+        "median": 1.0,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-kind_generative_llm",
+        "name": "Share of firms disclosing generative AI or LLMs",
+        "last_observed": 0.6,
+        "date": "2036-12-31",
+        "lower": 0.2272,
+        "median": 0.9424,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-kind_agentic",
+        "name": "Share of firms disclosing agentic AI",
+        "last_observed": 0.2667,
+        "date": "2036-12-31",
+        "lower": 0.0129,
+        "median": 0.5804,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-share_vendor",
+        "name": "Share of firms naming an AI vendor",
+        "last_observed": 0.4,
+        "date": "2036-12-31",
+        "lower": 0.1397,
+        "median": 0.4002,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-risk_third_party",
+        "name": "Share of firms disclosing AI third-party (vendor) risk",
+        "last_observed": 0.2667,
+        "date": "2036-12-31",
+        "lower": 0.1097,
+        "median": 0.7054,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-gov_policies_processes",
+        "name": "Share of firms disclosing AI policies or processes (policy, assessment, approval)",
+        "last_observed": 0.2667,
+        "date": "2036-12-31",
+        "lower": 0.1229,
+        "median": 0.5793,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-mit_regulation_lagging_behind_ai",
+        "name": "Share of firms disclosing AI risk: regulation lagging behind AI (MIT 6.5)",
+        "last_observed": 0.6333,
+        "date": "2036-12-31",
+        "lower": 0.1144,
+        "median": 0.9623,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-risk_operational_reliability",
+        "name": "Share of firms disclosing AI operational-reliability risk",
+        "last_observed": 0.7333,
+        "date": "2036-12-31",
+        "lower": 0.0636,
+        "median": 0.7383,
+        "upper": 1.0
+       }
+      ]
+     },
+     "diagnostics": [
+      "Quantiles of 'Manufacturing: Share of firms disclosing own AI use in R&D, engineering and product development' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Manufacturing: Share of firms disclosing generative AI or LLMs' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Manufacturing: Share of firms disclosing agentic AI' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Manufacturing: Share of firms naming an AI vendor' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Manufacturing: Share of firms disclosing AI third-party (vendor) risk' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Manufacturing: Share of firms disclosing AI policies or processes (policy, assessment, approval)' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Manufacturing: Share of firms disclosing AI risk: regulation lagging behind AI (MIT 6.5)' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Manufacturing: Share of firms disclosing AI operational-reliability risk' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+      "This series measures company reporting, not independently verified adoption or incidents."
+     ]
+    },
+    {
+     "configuration": [
+      {
+       "driver": "Own AI use in operations",
+       "series_id": "series-C-bf_operations",
+       "outcome": "stalling",
+       "change_per_quarter": 0.0,
+       "last_observed": 0.4333
+      },
+      {
+       "driver": "AI system security risk",
+       "series_id": "series-C-mit_ai_system_security_vulnerabilities_attacks",
+       "outcome": "accelerating",
+       "change_per_quarter": 0.0561,
+       "last_observed": 0.7333
+      }
+     ],
+     "assumption": "Own AI use in operations: stalling; AI system security risk: accelerating",
+     "by_horizon": {
+      "2y": [
+       {
+        "series_id": "series-C-bf_rd_product",
+        "name": "Share of firms disclosing own AI use in R&D, engineering and product development",
+        "last_observed": 0.6,
+        "date": "2028-12-31",
+        "lower": 0.5132,
+        "median": 0.9051,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-kind_generative_llm",
+        "name": "Share of firms disclosing generative AI or LLMs",
+        "last_observed": 0.6,
+        "date": "2028-12-31",
+        "lower": 0.4425,
+        "median": 0.7484,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-kind_agentic",
+        "name": "Share of firms disclosing agentic AI",
+        "last_observed": 0.2667,
+        "date": "2028-12-31",
+        "lower": 0.1781,
+        "median": 0.422,
+        "upper": 0.9786
+       },
+       {
+        "series_id": "series-C-share_vendor",
+        "name": "Share of firms naming an AI vendor",
+        "last_observed": 0.4,
+        "date": "2028-12-31",
+        "lower": 0.2931,
+        "median": 0.4018,
+        "upper": 0.5626
+       },
+       {
+        "series_id": "series-C-risk_third_party",
+        "name": "Share of firms disclosing AI third-party (vendor) risk",
+        "last_observed": 0.2667,
+        "date": "2028-12-31",
+        "lower": 0.1943,
+        "median": 0.4219,
+        "upper": 0.8071
+       },
+       {
+        "series_id": "series-C-gov_policies_processes",
+        "name": "Share of firms disclosing AI policies or processes (policy, assessment, approval)",
+        "last_observed": 0.2667,
+        "date": "2028-12-31",
+        "lower": 0.2127,
+        "median": 0.3838,
+        "upper": 0.6444
+       },
+       {
+        "series_id": "series-C-mit_regulation_lagging_behind_ai",
+        "name": "Share of firms disclosing AI risk: regulation lagging behind AI (MIT 6.5)",
+        "last_observed": 0.6333,
+        "date": "2028-12-31",
+        "lower": 0.4091,
+        "median": 0.7331,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-risk_operational_reliability",
+        "name": "Share of firms disclosing AI operational-reliability risk",
+        "last_observed": 0.7333,
+        "date": "2028-12-31",
+        "lower": 0.5322,
+        "median": 0.7419,
+        "upper": 1.0
+       }
+      ],
+      "5y": [
+       {
+        "series_id": "series-C-bf_rd_product",
+        "name": "Share of firms disclosing own AI use in R&D, engineering and product development",
+        "last_observed": 0.6,
+        "date": "2031-12-31",
+        "lower": 0.486,
+        "median": 1.0,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-kind_generative_llm",
+        "name": "Share of firms disclosing generative AI or LLMs",
+        "last_observed": 0.6,
+        "date": "2031-12-31",
+        "lower": 0.3615,
+        "median": 0.8278,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-kind_agentic",
+        "name": "Share of firms disclosing agentic AI",
+        "last_observed": 0.2667,
+        "date": "2031-12-31",
+        "lower": 0.1458,
+        "median": 0.502,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-share_vendor",
+        "name": "Share of firms naming an AI vendor",
+        "last_observed": 0.4,
+        "date": "2031-12-31",
+        "lower": 0.2153,
+        "median": 0.4018,
+        "upper": 0.6143
+       },
+       {
+        "series_id": "series-C-risk_third_party",
+        "name": "Share of firms disclosing AI third-party (vendor) risk",
+        "last_observed": 0.2667,
+        "date": "2031-12-31",
+        "lower": 0.1771,
+        "median": 0.5377,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-gov_policies_processes",
+        "name": "Share of firms disclosing AI policies or processes (policy, assessment, approval)",
+        "last_observed": 0.2667,
+        "date": "2031-12-31",
+        "lower": 0.1836,
+        "median": 0.4539,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-mit_regulation_lagging_behind_ai",
+        "name": "Share of firms disclosing AI risk: regulation lagging behind AI (MIT 6.5)",
+        "last_observed": 0.6333,
+        "date": "2031-12-31",
+        "lower": 0.3089,
+        "median": 0.772,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-risk_operational_reliability",
+        "name": "Share of firms disclosing AI operational-reliability risk",
+        "last_observed": 0.7333,
+        "date": "2031-12-31",
+        "lower": 0.3857,
+        "median": 0.7454,
+        "upper": 1.0
+       }
+      ],
+      "10y": [
+       {
+        "series_id": "series-C-bf_rd_product",
+        "name": "Share of firms disclosing own AI use in R&D, engineering and product development",
+        "last_observed": 0.6,
+        "date": "2036-12-31",
+        "lower": 0.3202,
+        "median": 1.0,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-kind_generative_llm",
+        "name": "Share of firms disclosing generative AI or LLMs",
+        "last_observed": 0.6,
+        "date": "2036-12-31",
+        "lower": 0.1529,
+        "median": 0.8498,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-kind_agentic",
+        "name": "Share of firms disclosing agentic AI",
+        "last_observed": 0.2667,
+        "date": "2036-12-31",
+        "lower": 0.0074,
+        "median": 0.5259,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-share_vendor",
+        "name": "Share of firms naming an AI vendor",
+        "last_observed": 0.4,
+        "date": "2036-12-31",
+        "lower": 0.1597,
+        "median": 0.4001,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-risk_third_party",
+        "name": "Share of firms disclosing AI third-party (vendor) risk",
+        "last_observed": 0.2667,
+        "date": "2036-12-31",
+        "lower": 0.0714,
+        "median": 0.6022,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-gov_policies_processes",
+        "name": "Share of firms disclosing AI policies or processes (policy, assessment, approval)",
+        "last_observed": 0.2667,
+        "date": "2036-12-31",
+        "lower": 0.095,
+        "median": 0.5023,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-mit_regulation_lagging_behind_ai",
+        "name": "Share of firms disclosing AI risk: regulation lagging behind AI (MIT 6.5)",
+        "last_observed": 0.6333,
+        "date": "2036-12-31",
+        "lower": 0.0765,
+        "median": 0.798,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-C-risk_operational_reliability",
+        "name": "Share of firms disclosing AI operational-reliability risk",
+        "last_observed": 0.7333,
+        "date": "2036-12-31",
+        "lower": 0.0253,
+        "median": 0.7399,
+        "upper": 1.0
+       }
+      ]
+     },
+     "diagnostics": [
+      "Quantiles of 'Manufacturing: Share of firms disclosing own AI use in R&D, engineering and product development' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Manufacturing: Share of firms disclosing generative AI or LLMs' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Manufacturing: Share of firms disclosing agentic AI' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Manufacturing: Share of firms naming an AI vendor' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Manufacturing: Share of firms disclosing AI third-party (vendor) risk' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Manufacturing: Share of firms disclosing AI policies or processes (policy, assessment, approval)' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Manufacturing: Share of firms disclosing AI risk: regulation lagging behind AI (MIT 6.5)' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Manufacturing: Share of firms disclosing AI operational-reliability risk' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+      "This series measures company reporting, not independently verified adoption or incidents."
+     ]
+    }
+   ]
+  },
+  "banking": {
+   "drivers": [
+    {
+     "series_id": "series-L-kind_generative_llm",
+     "name": "Generative AI / LLM uptake",
+     "series_name": "Finance and insurance: Share of firms disclosing generative AI or LLMs",
+     "values": [
+      0.0333,
+      0.1,
+      0.1667,
+      0.6667,
+      0.7,
+      0.7,
+      0.7,
+      0.7667,
+      0.7667,
+      0.7667,
+      0.7667,
+      0.7333,
+      0.7333,
+      0.7333
+     ],
+     "dates": [
+      "2023-03-31",
+      "2023-06-30",
+      "2023-09-30",
+      "2023-12-31",
+      "2024-03-31",
+      "2024-06-30",
+      "2024-09-30",
+      "2024-12-31",
+      "2025-03-31",
+      "2025-06-30",
+      "2025-09-30",
+      "2025-12-31",
+      "2026-03-31",
+      "2026-06-30"
+     ]
+    },
+    {
+     "series_id": "series-L-mit_fraud_scams_targeted_manipulation",
+     "name": "AI fraud and impersonation risk",
+     "series_name": "Finance and insurance: Share of firms disclosing AI risk: fraud, scams and impersonation (MIT 4.3)",
+     "values": [
+      0.0333,
+      0.0333,
+      0.0667,
+      0.3,
+      0.3,
+      0.3667,
+      0.3,
+      0.5333,
+      0.5333,
+      0.5333,
+      0.5333,
+      0.6333,
+      0.7,
+      0.7
+     ],
+     "dates": [
+      "2023-03-31",
+      "2023-06-30",
+      "2023-09-30",
+      "2023-12-31",
+      "2024-03-31",
+      "2024-06-30",
+      "2024-09-30",
+      "2024-12-31",
+      "2025-03-31",
+      "2025-06-30",
+      "2025-09-30",
+      "2025-12-31",
+      "2026-03-31",
+      "2026-06-30"
+     ]
+    }
+   ],
+   "backtest": {
+    "holdout": 3,
+    "inside": 11,
+    "observed": 24
+   },
+   "scenarios": [
+    {
+     "configuration": [
+      {
+       "driver": "Generative AI / LLM uptake",
+       "series_id": "series-L-kind_generative_llm",
+       "outcome": "accelerating",
+       "change_per_quarter": 0.0494,
+       "last_observed": 0.7333
+      },
+      {
+       "driver": "AI fraud and impersonation risk",
+       "series_id": "series-L-mit_fraud_scams_targeted_manipulation",
+       "outcome": "stalling",
+       "change_per_quarter": 0.0,
+       "last_observed": 0.7
+      }
+     ],
+     "assumption": "Generative AI / LLM uptake: accelerating; AI fraud and impersonation risk: stalling",
+     "by_horizon": {
+      "2y": [
+       {
+        "series_id": "series-L-mit_false_or_misleading_information",
+        "name": "Share of firms disclosing AI risk: false or misleading output (MIT 3.1)",
+        "last_observed": 0.7333,
+        "date": "2028-12-31",
+        "lower": 0.7428,
+        "median": 1.0,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-gov_oversight_structure",
+        "name": "Share of firms disclosing an AI oversight structure (board, committee, named owner)",
+        "last_observed": 0.3333,
+        "date": "2028-12-31",
+        "lower": 0.2809,
+        "median": 0.3491,
+        "upper": 0.5991
+       },
+       {
+        "series_id": "series-L-bf_decision_analytics",
+        "name": "Share of firms disclosing own AI use in analytics and decision support",
+        "last_observed": 0.4667,
+        "date": "2028-12-31",
+        "lower": 0.4166,
+        "median": 0.585,
+        "upper": 0.8462
+       },
+       {
+        "series_id": "series-L-bf_customer_service",
+        "name": "Share of firms disclosing own AI use in customer service",
+        "last_observed": 0.2333,
+        "date": "2028-12-31",
+        "lower": 0.0568,
+        "median": 0.2403,
+        "upper": 0.4913
+       },
+       {
+        "series_id": "series-L-kind_agentic",
+        "name": "Share of firms disclosing agentic AI",
+        "last_observed": 0.4,
+        "date": "2028-12-31",
+        "lower": 0.2193,
+        "median": 0.4153,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-share_vendor",
+        "name": "Share of firms naming an AI vendor",
+        "last_observed": 0.5667,
+        "date": "2028-12-31",
+        "lower": 0.5134,
+        "median": 0.5798,
+        "upper": 0.7149
+       },
+       {
+        "series_id": "series-L-share_regulatory_risk",
+        "name": "Share of firms reporting AI regulatory risk",
+        "last_observed": 0.9,
+        "date": "2028-12-31",
+        "lower": 0.8055,
+        "median": 0.9591,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-risk_third_party",
+        "name": "Share of firms disclosing AI third-party (vendor) risk",
+        "last_observed": 0.3333,
+        "date": "2028-12-31",
+        "lower": 0.2514,
+        "median": 0.4007,
+        "upper": 0.6317
+       }
+      ],
+      "5y": [
+       {
+        "series_id": "series-L-mit_false_or_misleading_information",
+        "name": "Share of firms disclosing AI risk: false or misleading output (MIT 3.1)",
+        "last_observed": 0.7333,
+        "date": "2031-12-31",
+        "lower": 0.7088,
+        "median": 1.0,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-gov_oversight_structure",
+        "name": "Share of firms disclosing an AI oversight structure (board, committee, named owner)",
+        "last_observed": 0.3333,
+        "date": "2031-12-31",
+        "lower": 0.2525,
+        "median": 0.3532,
+        "upper": 0.7537
+       },
+       {
+        "series_id": "series-L-bf_decision_analytics",
+        "name": "Share of firms disclosing own AI use in analytics and decision support",
+        "last_observed": 0.4667,
+        "date": "2031-12-31",
+        "lower": 0.3735,
+        "median": 0.6086,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-bf_customer_service",
+        "name": "Share of firms disclosing own AI use in customer service",
+        "last_observed": 0.2333,
+        "date": "2031-12-31",
+        "lower": 0.0026,
+        "median": 0.2431,
+        "upper": 0.645
+       },
+       {
+        "series_id": "series-L-kind_agentic",
+        "name": "Share of firms disclosing agentic AI",
+        "last_observed": 0.4,
+        "date": "2031-12-31",
+        "lower": 0.1777,
+        "median": 0.4317,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-share_vendor",
+        "name": "Share of firms naming an AI vendor",
+        "last_observed": 0.5667,
+        "date": "2031-12-31",
+        "lower": 0.4685,
+        "median": 0.5814,
+        "upper": 0.857
+       },
+       {
+        "series_id": "series-L-share_regulatory_risk",
+        "name": "Share of firms reporting AI regulatory risk",
+        "last_observed": 0.9,
+        "date": "2031-12-31",
+        "lower": 0.7495,
+        "median": 0.985,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-risk_third_party",
+        "name": "Share of firms disclosing AI third-party (vendor) risk",
+        "last_observed": 0.3333,
+        "date": "2031-12-31",
+        "lower": 0.2183,
+        "median": 0.4533,
+        "upper": 0.9263
+       }
+      ],
+      "10y": [
+       {
+        "series_id": "series-L-mit_false_or_misleading_information",
+        "name": "Share of firms disclosing AI risk: false or misleading output (MIT 3.1)",
+        "last_observed": 0.7333,
+        "date": "2036-12-31",
+        "lower": 0.683,
+        "median": 1.0,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-gov_oversight_structure",
+        "name": "Share of firms disclosing an AI oversight structure (board, committee, named owner)",
+        "last_observed": 0.3333,
+        "date": "2036-12-31",
+        "lower": 0.1606,
+        "median": 0.3606,
+        "upper": 0.9372
+       },
+       {
+        "series_id": "series-L-bf_decision_analytics",
+        "name": "Share of firms disclosing own AI use in analytics and decision support",
+        "last_observed": 0.4667,
+        "date": "2036-12-31",
+        "lower": 0.3037,
+        "median": 0.6185,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-bf_customer_service",
+        "name": "Share of firms disclosing own AI use in customer service",
+        "last_observed": 0.2333,
+        "date": "2036-12-31",
+        "lower": 0.0,
+        "median": 0.2401,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-kind_agentic",
+        "name": "Share of firms disclosing agentic AI",
+        "last_observed": 0.4,
+        "date": "2036-12-31",
+        "lower": 0.0,
+        "median": 0.4408,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-share_vendor",
+        "name": "Share of firms naming an AI vendor",
+        "last_observed": 0.5667,
+        "date": "2036-12-31",
+        "lower": 0.3637,
+        "median": 0.5818,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-share_regulatory_risk",
+        "name": "Share of firms reporting AI regulatory risk",
+        "last_observed": 0.9,
+        "date": "2036-12-31",
+        "lower": 0.6823,
+        "median": 1.0,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-risk_third_party",
+        "name": "Share of firms disclosing AI third-party (vendor) risk",
+        "last_observed": 0.3333,
+        "date": "2036-12-31",
+        "lower": 0.1756,
+        "median": 0.4953,
+        "upper": 1.0
+       }
+      ]
+     },
+     "diagnostics": [
+      "Quantiles of 'Finance and insurance: Share of firms disclosing AI risk: false or misleading output (MIT 3.1)' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Finance and insurance: Share of firms disclosing an AI oversight structure (board, committee, named owner)' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Finance and insurance: Share of firms disclosing own AI use in analytics and decision support' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Finance and insurance: Share of firms disclosing own AI use in customer service' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Finance and insurance: Share of firms disclosing agentic AI' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Finance and insurance: Share of firms naming an AI vendor' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Finance and insurance: Share of firms reporting AI regulatory risk' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Finance and insurance: Share of firms disclosing AI third-party (vendor) risk' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+      "This series measures company reporting, not independently verified adoption or incidents."
+     ]
+    },
+    {
+     "configuration": [
+      {
+       "driver": "Generative AI / LLM uptake",
+       "series_id": "series-L-kind_generative_llm",
+       "outcome": "stalling",
+       "change_per_quarter": 0.0,
+       "last_observed": 0.7333
+      },
+      {
+       "driver": "AI fraud and impersonation risk",
+       "series_id": "series-L-mit_fraud_scams_targeted_manipulation",
+       "outcome": "accelerating",
+       "change_per_quarter": 0.0541,
+       "last_observed": 0.7
+      }
+     ],
+     "assumption": "Generative AI / LLM uptake: stalling; AI fraud and impersonation risk: accelerating",
+     "by_horizon": {
+      "2y": [
+       {
+        "series_id": "series-L-mit_false_or_misleading_information",
+        "name": "Share of firms disclosing AI risk: false or misleading output (MIT 3.1)",
+        "last_observed": 0.7333,
+        "date": "2028-12-31",
+        "lower": 0.833,
+        "median": 1.0,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-gov_oversight_structure",
+        "name": "Share of firms disclosing an AI oversight structure (board, committee, named owner)",
+        "last_observed": 0.3333,
+        "date": "2028-12-31",
+        "lower": 0.2869,
+        "median": 0.3782,
+        "upper": 0.8168
+       },
+       {
+        "series_id": "series-L-bf_decision_analytics",
+        "name": "Share of firms disclosing own AI use in analytics and decision support",
+        "last_observed": 0.4667,
+        "date": "2028-12-31",
+        "lower": 0.423,
+        "median": 0.5392,
+        "upper": 0.7258
+       },
+       {
+        "series_id": "series-L-bf_customer_service",
+        "name": "Share of firms disclosing own AI use in customer service",
+        "last_observed": 0.2333,
+        "date": "2028-12-31",
+        "lower": 0.0483,
+        "median": 0.2386,
+        "upper": 0.5127
+       },
+       {
+        "series_id": "series-L-kind_agentic",
+        "name": "Share of firms disclosing agentic AI",
+        "last_observed": 0.4,
+        "date": "2028-12-31",
+        "lower": 0.234,
+        "median": 0.4129,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-share_vendor",
+        "name": "Share of firms naming an AI vendor",
+        "last_observed": 0.5667,
+        "date": "2028-12-31",
+        "lower": 0.516,
+        "median": 0.5882,
+        "upper": 0.8784
+       },
+       {
+        "series_id": "series-L-share_regulatory_risk",
+        "name": "Share of firms reporting AI regulatory risk",
+        "last_observed": 0.9,
+        "date": "2028-12-31",
+        "lower": 0.8483,
+        "median": 1.0,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-risk_third_party",
+        "name": "Share of firms disclosing AI third-party (vendor) risk",
+        "last_observed": 0.3333,
+        "date": "2028-12-31",
+        "lower": 0.2644,
+        "median": 0.4617,
+        "upper": 0.7944
+       }
+      ],
+      "5y": [
+       {
+        "series_id": "series-L-mit_false_or_misleading_information",
+        "name": "Share of firms disclosing AI risk: false or misleading output (MIT 3.1)",
+        "last_observed": 0.7333,
+        "date": "2031-12-31",
+        "lower": 0.8124,
+        "median": 1.0,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-gov_oversight_structure",
+        "name": "Share of firms disclosing an AI oversight structure (board, committee, named owner)",
+        "last_observed": 0.3333,
+        "date": "2031-12-31",
+        "lower": 0.2741,
+        "median": 0.4186,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-bf_decision_analytics",
+        "name": "Share of firms disclosing own AI use in analytics and decision support",
+        "last_observed": 0.4667,
+        "date": "2031-12-31",
+        "lower": 0.3929,
+        "median": 0.562,
+        "upper": 0.9288
+       },
+       {
+        "series_id": "series-L-bf_customer_service",
+        "name": "Share of firms disclosing own AI use in customer service",
+        "last_observed": 0.2333,
+        "date": "2031-12-31",
+        "lower": 0.0,
+        "median": 0.241,
+        "upper": 0.6386
+       },
+       {
+        "series_id": "series-L-kind_agentic",
+        "name": "Share of firms disclosing agentic AI",
+        "last_observed": 0.4,
+        "date": "2031-12-31",
+        "lower": 0.1678,
+        "median": 0.428,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-share_vendor",
+        "name": "Share of firms naming an AI vendor",
+        "last_observed": 0.5667,
+        "date": "2031-12-31",
+        "lower": 0.478,
+        "median": 0.5897,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-share_regulatory_risk",
+        "name": "Share of firms reporting AI regulatory risk",
+        "last_observed": 0.9,
+        "date": "2031-12-31",
+        "lower": 0.8063,
+        "median": 1.0,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-risk_third_party",
+        "name": "Share of firms disclosing AI third-party (vendor) risk",
+        "last_observed": 0.3333,
+        "date": "2031-12-31",
+        "lower": 0.2317,
+        "median": 0.5271,
+        "upper": 1.0
+       }
+      ],
+      "10y": [
+       {
+        "series_id": "series-L-mit_false_or_misleading_information",
+        "name": "Share of firms disclosing AI risk: false or misleading output (MIT 3.1)",
+        "last_observed": 0.7333,
+        "date": "2036-12-31",
+        "lower": 0.8242,
+        "median": 1.0,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-gov_oversight_structure",
+        "name": "Share of firms disclosing an AI oversight structure (board, committee, named owner)",
+        "last_observed": 0.3333,
+        "date": "2036-12-31",
+        "lower": 0.1501,
+        "median": 0.4235,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-bf_decision_analytics",
+        "name": "Share of firms disclosing own AI use in analytics and decision support",
+        "last_observed": 0.4667,
+        "date": "2036-12-31",
+        "lower": 0.3319,
+        "median": 0.5745,
+        "upper": 0.9965
+       },
+       {
+        "series_id": "series-L-bf_customer_service",
+        "name": "Share of firms disclosing own AI use in customer service",
+        "last_observed": 0.2333,
+        "date": "2036-12-31",
+        "lower": 0.0,
+        "median": 0.2371,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-kind_agentic",
+        "name": "Share of firms disclosing agentic AI",
+        "last_observed": 0.4,
+        "date": "2036-12-31",
+        "lower": 0.013,
+        "median": 0.4336,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-share_vendor",
+        "name": "Share of firms naming an AI vendor",
+        "last_observed": 0.5667,
+        "date": "2036-12-31",
+        "lower": 0.3599,
+        "median": 0.5907,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-share_regulatory_risk",
+        "name": "Share of firms reporting AI regulatory risk",
+        "last_observed": 0.9,
+        "date": "2036-12-31",
+        "lower": 0.7217,
+        "median": 1.0,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-L-risk_third_party",
+        "name": "Share of firms disclosing AI third-party (vendor) risk",
+        "last_observed": 0.3333,
+        "date": "2036-12-31",
+        "lower": 0.137,
+        "median": 0.567,
+        "upper": 1.0
+       }
+      ]
+     },
+     "diagnostics": [
+      "Quantiles of 'Finance and insurance: Share of firms disclosing AI risk: false or misleading output (MIT 3.1)' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Finance and insurance: Share of firms disclosing an AI oversight structure (board, committee, named owner)' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Finance and insurance: Share of firms disclosing own AI use in analytics and decision support' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Finance and insurance: Share of firms disclosing own AI use in customer service' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Finance and insurance: Share of firms disclosing agentic AI' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Finance and insurance: Share of firms naming an AI vendor' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Finance and insurance: Share of firms reporting AI regulatory risk' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Finance and insurance: Share of firms disclosing AI third-party (vendor) risk' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+      "This series measures company reporting, not independently verified adoption or incidents."
+     ]
+    }
+   ]
+  },
+  "it": {
+   "drivers": [
+    {
+     "series_id": "series-K-kind_agentic",
+     "name": "Agentic AI",
+     "series_name": "Software, IT and telecommunications: Share of firms disclosing agentic AI",
+     "values": [
+      0.0,
+      0.0,
+      0.0,
+      0.069,
+      0.069,
+      0.069,
+      0.1034,
+      0.2,
+      0.2333,
+      0.4333,
+      0.4667,
+      0.5667,
+      0.6667,
+      0.6667
+     ],
+     "dates": [
+      "2023-03-31",
+      "2023-06-30",
+      "2023-09-30",
+      "2023-12-31",
+      "2024-03-31",
+      "2024-06-30",
+      "2024-09-30",
+      "2024-12-31",
+      "2025-03-31",
+      "2025-06-30",
+      "2025-09-30",
+      "2025-12-31",
+      "2026-03-31",
+      "2026-06-30"
+     ]
+    },
+    {
+     "series_id": "series-K-risk_market_demand",
+     "name": "AI market-demand risk (AI spending bubble)",
+     "series_name": "Software, IT and telecommunications: Share of firms disclosing AI market-demand risk",
+     "values": [
+      0.1034,
+      0.1379,
+      0.2414,
+      0.2759,
+      0.3448,
+      0.3448,
+      0.3448,
+      0.3667,
+      0.4,
+      0.4333,
+      0.4,
+      0.4333,
+      0.5333,
+      0.5333
+     ],
+     "dates": [
+      "2023-03-31",
+      "2023-06-30",
+      "2023-09-30",
+      "2023-12-31",
+      "2024-03-31",
+      "2024-06-30",
+      "2024-09-30",
+      "2024-12-31",
+      "2025-03-31",
+      "2025-06-30",
+      "2025-09-30",
+      "2025-12-31",
+      "2026-03-31",
+      "2026-06-30"
+     ]
+    }
+   ],
+   "backtest": {
+    "holdout": 3,
+    "inside": 15,
+    "observed": 24
+   },
+   "scenarios": [
+    {
+     "configuration": [
+      {
+       "driver": "Agentic AI",
+       "series_id": "series-K-kind_agentic",
+       "outcome": "accelerating",
+       "change_per_quarter": 0.0578,
+       "last_observed": 0.6667
+      },
+      {
+       "driver": "AI market-demand risk (AI spending bubble)",
+       "series_id": "series-K-risk_market_demand",
+       "outcome": "stalling",
+       "change_per_quarter": 0.0,
+       "last_observed": 0.5333
+      }
+     ],
+     "assumption": "Agentic AI: accelerating; AI market-demand risk (AI spending bubble): stalling",
+     "by_horizon": {
+      "2y": [
+       {
+        "series_id": "series-K-risk_workforce",
+        "name": "Share of firms disclosing AI workforce risk",
+        "last_observed": 0.6333,
+        "date": "2028-12-31",
+        "lower": 0.6253,
+        "median": 0.9738,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-mit_devaluation_of_human_effort",
+        "name": "Share of firms disclosing AI risk: devaluation of human effort and IP (MIT 6.3)",
+        "last_observed": 0.6333,
+        "date": "2028-12-31",
+        "lower": 0.4674,
+        "median": 0.6372,
+        "upper": 0.7241
+       },
+       {
+        "series_id": "series-K-mit_power_centralization_unfair_benefits",
+        "name": "Share of firms disclosing AI risk: power centralisation, dependence on few providers (MIT 6.1)",
+        "last_observed": 0.3333,
+        "date": "2028-12-31",
+        "lower": 0.1626,
+        "median": 0.4682,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-risk_environmental",
+        "name": "Share of firms disclosing AI environmental (energy, emissions) risk",
+        "last_observed": 0.2,
+        "date": "2028-12-31",
+        "lower": 0.1769,
+        "median": 0.3512,
+        "upper": 0.6352
+       },
+       {
+        "series_id": "series-K-share_llm_adoption",
+        "name": "Share of firms reporting LLM adoption",
+        "last_observed": 0.6333,
+        "date": "2028-12-31",
+        "lower": 0.3167,
+        "median": 0.7112,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-bf_it_cybersecurity",
+        "name": "Share of firms disclosing own AI use in IT and cybersecurity",
+        "last_observed": 0.6,
+        "date": "2028-12-31",
+        "lower": 0.4483,
+        "median": 0.7752,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-gov_policies_processes",
+        "name": "Share of firms disclosing AI policies or processes (policy, assessment, approval)",
+        "last_observed": 0.5,
+        "date": "2028-12-31",
+        "lower": 0.3167,
+        "median": 0.6333,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-role_market_driver",
+        "name": "Share of firms disclosing AI as a driver of demand or market conditions",
+        "last_observed": 0.7,
+        "date": "2028-12-31",
+        "lower": 0.5436,
+        "median": 0.709,
+        "upper": 1.0
+       }
+      ],
+      "5y": [
+       {
+        "series_id": "series-K-risk_workforce",
+        "name": "Share of firms disclosing AI workforce risk",
+        "last_observed": 0.6333,
+        "date": "2031-12-31",
+        "lower": 0.5493,
+        "median": 1.0,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-mit_devaluation_of_human_effort",
+        "name": "Share of firms disclosing AI risk: devaluation of human effort and IP (MIT 6.3)",
+        "last_observed": 0.6333,
+        "date": "2031-12-31",
+        "lower": 0.2931,
+        "median": 0.6358,
+        "upper": 0.8336
+       },
+       {
+        "series_id": "series-K-mit_power_centralization_unfair_benefits",
+        "name": "Share of firms disclosing AI risk: power centralisation, dependence on few providers (MIT 6.1)",
+        "last_observed": 0.3333,
+        "date": "2031-12-31",
+        "lower": 0.0964,
+        "median": 0.5229,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-risk_environmental",
+        "name": "Share of firms disclosing AI environmental (energy, emissions) risk",
+        "last_observed": 0.2,
+        "date": "2031-12-31",
+        "lower": 0.1553,
+        "median": 0.4597,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-share_llm_adoption",
+        "name": "Share of firms reporting LLM adoption",
+        "last_observed": 0.6333,
+        "date": "2031-12-31",
+        "lower": 0.1133,
+        "median": 0.7407,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-bf_it_cybersecurity",
+        "name": "Share of firms disclosing own AI use in IT and cybersecurity",
+        "last_observed": 0.6,
+        "date": "2031-12-31",
+        "lower": 0.3845,
+        "median": 0.8576,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-gov_policies_processes",
+        "name": "Share of firms disclosing AI policies or processes (policy, assessment, approval)",
+        "last_observed": 0.5,
+        "date": "2031-12-31",
+        "lower": 0.209,
+        "median": 0.6982,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-role_market_driver",
+        "name": "Share of firms disclosing AI as a driver of demand or market conditions",
+        "last_observed": 0.7,
+        "date": "2031-12-31",
+        "lower": 0.4398,
+        "median": 0.719,
+        "upper": 1.0
+       }
+      ],
+      "10y": [
+       {
+        "series_id": "series-K-risk_workforce",
+        "name": "Share of firms disclosing AI workforce risk",
+        "last_observed": 0.6333,
+        "date": "2036-12-31",
+        "lower": 0.4828,
+        "median": 1.0,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-mit_devaluation_of_human_effort",
+        "name": "Share of firms disclosing AI risk: devaluation of human effort and IP (MIT 6.3)",
+        "last_observed": 0.6333,
+        "date": "2036-12-31",
+        "lower": 0.0326,
+        "median": 0.6303,
+        "upper": 0.852
+       },
+       {
+        "series_id": "series-K-mit_power_centralization_unfair_benefits",
+        "name": "Share of firms disclosing AI risk: power centralisation, dependence on few providers (MIT 6.1)",
+        "last_observed": 0.3333,
+        "date": "2036-12-31",
+        "lower": 0.0,
+        "median": 0.5676,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-risk_environmental",
+        "name": "Share of firms disclosing AI environmental (energy, emissions) risk",
+        "last_observed": 0.2,
+        "date": "2036-12-31",
+        "lower": 0.1416,
+        "median": 0.5524,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-share_llm_adoption",
+        "name": "Share of firms reporting LLM adoption",
+        "last_observed": 0.6333,
+        "date": "2036-12-31",
+        "lower": 0.0,
+        "median": 0.7512,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-bf_it_cybersecurity",
+        "name": "Share of firms disclosing own AI use in IT and cybersecurity",
+        "last_observed": 0.6,
+        "date": "2036-12-31",
+        "lower": 0.2865,
+        "median": 0.9,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-gov_policies_processes",
+        "name": "Share of firms disclosing AI policies or processes (policy, assessment, approval)",
+        "last_observed": 0.5,
+        "date": "2036-12-31",
+        "lower": 0.028,
+        "median": 0.7474,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-role_market_driver",
+        "name": "Share of firms disclosing AI as a driver of demand or market conditions",
+        "last_observed": 0.7,
+        "date": "2036-12-31",
+        "lower": 0.1772,
+        "median": 0.7229,
+        "upper": 1.0
+       }
+      ]
+     },
+     "diagnostics": [
+      "Quantiles of 'Software, IT and telecommunications: Share of firms disclosing AI workforce risk' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Software, IT and telecommunications: Share of firms disclosing AI risk: devaluation of human effort and IP (MIT 6.3)' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Software, IT and telecommunications: Share of firms disclosing AI risk: power centralisation, dependence on few providers (MIT 6.1)' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Software, IT and telecommunications: Share of firms disclosing AI environmental (energy, emissions) risk' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Software, IT and telecommunications: Share of firms reporting LLM adoption' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Software, IT and telecommunications: Share of firms disclosing own AI use in IT and cybersecurity' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Software, IT and telecommunications: Share of firms disclosing AI policies or processes (policy, assessment, approval)' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Software, IT and telecommunications: Share of firms disclosing AI as a driver of demand or market conditions' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+      "This series measures company reporting, not independently verified adoption or incidents."
+     ]
+    },
+    {
+     "configuration": [
+      {
+       "driver": "Agentic AI",
+       "series_id": "series-K-kind_agentic",
+       "outcome": "stalling",
+       "change_per_quarter": 0.0,
+       "last_observed": 0.6667
+      },
+      {
+       "driver": "AI market-demand risk (AI spending bubble)",
+       "series_id": "series-K-risk_market_demand",
+       "outcome": "accelerating",
+       "change_per_quarter": 0.0289,
+       "last_observed": 0.5333
+      }
+     ],
+     "assumption": "Agentic AI: stalling; AI market-demand risk (AI spending bubble): accelerating",
+     "by_horizon": {
+      "2y": [
+       {
+        "series_id": "series-K-risk_workforce",
+        "name": "Share of firms disclosing AI workforce risk",
+        "last_observed": 0.6333,
+        "date": "2028-12-31",
+        "lower": 0.6165,
+        "median": 0.9573,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-mit_devaluation_of_human_effort",
+        "name": "Share of firms disclosing AI risk: devaluation of human effort and IP (MIT 6.3)",
+        "last_observed": 0.6333,
+        "date": "2028-12-31",
+        "lower": 0.4235,
+        "median": 0.6358,
+        "upper": 0.7485
+       },
+       {
+        "series_id": "series-K-mit_power_centralization_unfair_benefits",
+        "name": "Share of firms disclosing AI risk: power centralisation, dependence on few providers (MIT 6.1)",
+        "last_observed": 0.3333,
+        "date": "2028-12-31",
+        "lower": 0.1532,
+        "median": 0.4539,
+        "upper": 0.9902
+       },
+       {
+        "series_id": "series-K-risk_environmental",
+        "name": "Share of firms disclosing AI environmental (energy, emissions) risk",
+        "last_observed": 0.2,
+        "date": "2028-12-31",
+        "lower": 0.1695,
+        "median": 0.3358,
+        "upper": 0.6093
+       },
+       {
+        "series_id": "series-K-share_llm_adoption",
+        "name": "Share of firms reporting LLM adoption",
+        "last_observed": 0.6333,
+        "date": "2028-12-31",
+        "lower": 0.2859,
+        "median": 0.7055,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-bf_it_cybersecurity",
+        "name": "Share of firms disclosing own AI use in IT and cybersecurity",
+        "last_observed": 0.6,
+        "date": "2028-12-31",
+        "lower": 0.4275,
+        "median": 0.7341,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-gov_policies_processes",
+        "name": "Share of firms disclosing AI policies or processes (policy, assessment, approval)",
+        "last_observed": 0.5,
+        "date": "2028-12-31",
+        "lower": 0.3092,
+        "median": 0.6408,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-role_market_driver",
+        "name": "Share of firms disclosing AI as a driver of demand or market conditions",
+        "last_observed": 0.7,
+        "date": "2028-12-31",
+        "lower": 0.5299,
+        "median": 0.7066,
+        "upper": 1.0
+       }
+      ],
+      "5y": [
+       {
+        "series_id": "series-K-risk_workforce",
+        "name": "Share of firms disclosing AI workforce risk",
+        "last_observed": 0.6333,
+        "date": "2031-12-31",
+        "lower": 0.5517,
+        "median": 1.0,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-mit_devaluation_of_human_effort",
+        "name": "Share of firms disclosing AI risk: devaluation of human effort and IP (MIT 6.3)",
+        "last_observed": 0.6333,
+        "date": "2031-12-31",
+        "lower": 0.168,
+        "median": 0.6348,
+        "upper": 0.8913
+       },
+       {
+        "series_id": "series-K-mit_power_centralization_unfair_benefits",
+        "name": "Share of firms disclosing AI risk: power centralisation, dependence on few providers (MIT 6.1)",
+        "last_observed": 0.3333,
+        "date": "2031-12-31",
+        "lower": 0.0829,
+        "median": 0.5178,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-risk_environmental",
+        "name": "Share of firms disclosing AI environmental (energy, emissions) risk",
+        "last_observed": 0.2,
+        "date": "2031-12-31",
+        "lower": 0.1514,
+        "median": 0.4546,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-share_llm_adoption",
+        "name": "Share of firms reporting LLM adoption",
+        "last_observed": 0.6333,
+        "date": "2031-12-31",
+        "lower": 0.0548,
+        "median": 0.7532,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-bf_it_cybersecurity",
+        "name": "Share of firms disclosing own AI use in IT and cybersecurity",
+        "last_observed": 0.6,
+        "date": "2031-12-31",
+        "lower": 0.3622,
+        "median": 0.8243,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-gov_policies_processes",
+        "name": "Share of firms disclosing AI policies or processes (policy, assessment, approval)",
+        "last_observed": 0.5,
+        "date": "2031-12-31",
+        "lower": 0.1876,
+        "median": 0.7331,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-role_market_driver",
+        "name": "Share of firms disclosing AI as a driver of demand or market conditions",
+        "last_observed": 0.7,
+        "date": "2031-12-31",
+        "lower": 0.4068,
+        "median": 0.7152,
+        "upper": 1.0
+       }
+      ],
+      "10y": [
+       {
+        "series_id": "series-K-risk_workforce",
+        "name": "Share of firms disclosing AI workforce risk",
+        "last_observed": 0.6333,
+        "date": "2036-12-31",
+        "lower": 0.5168,
+        "median": 1.0,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-mit_devaluation_of_human_effort",
+        "name": "Share of firms disclosing AI risk: devaluation of human effort and IP (MIT 6.3)",
+        "last_observed": 0.6333,
+        "date": "2036-12-31",
+        "lower": 0.0,
+        "median": 0.6295,
+        "upper": 0.9227
+       },
+       {
+        "series_id": "series-K-mit_power_centralization_unfair_benefits",
+        "name": "Share of firms disclosing AI risk: power centralisation, dependence on few providers (MIT 6.1)",
+        "last_observed": 0.3333,
+        "date": "2036-12-31",
+        "lower": 0.0,
+        "median": 0.5654,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-risk_environmental",
+        "name": "Share of firms disclosing AI environmental (energy, emissions) risk",
+        "last_observed": 0.2,
+        "date": "2036-12-31",
+        "lower": 0.1406,
+        "median": 0.5574,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-share_llm_adoption",
+        "name": "Share of firms reporting LLM adoption",
+        "last_observed": 0.6333,
+        "date": "2036-12-31",
+        "lower": 0.0,
+        "median": 0.7737,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-bf_it_cybersecurity",
+        "name": "Share of firms disclosing own AI use in IT and cybersecurity",
+        "last_observed": 0.6,
+        "date": "2036-12-31",
+        "lower": 0.277,
+        "median": 0.8739,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-gov_policies_processes",
+        "name": "Share of firms disclosing AI policies or processes (policy, assessment, approval)",
+        "last_observed": 0.5,
+        "date": "2036-12-31",
+        "lower": 0.0067,
+        "median": 0.8101,
+        "upper": 1.0
+       },
+       {
+        "series_id": "series-K-role_market_driver",
+        "name": "Share of firms disclosing AI as a driver of demand or market conditions",
+        "last_observed": 0.7,
+        "date": "2036-12-31",
+        "lower": 0.1582,
+        "median": 0.7214,
+        "upper": 1.0
+       }
+      ]
+     },
+     "diagnostics": [
+      "Quantiles of 'Software, IT and telecommunications: Share of firms disclosing AI workforce risk' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Software, IT and telecommunications: Share of firms disclosing AI risk: devaluation of human effort and IP (MIT 6.3)' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Software, IT and telecommunications: Share of firms disclosing AI risk: power centralisation, dependence on few providers (MIT 6.1)' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Software, IT and telecommunications: Share of firms disclosing AI environmental (energy, emissions) risk' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Software, IT and telecommunications: Share of firms reporting LLM adoption' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Software, IT and telecommunications: Share of firms disclosing own AI use in IT and cybersecurity' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Software, IT and telecommunications: Share of firms disclosing AI policies or processes (policy, assessment, approval)' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "Quantiles of 'Software, IT and telecommunications: Share of firms disclosing AI as a driver of demand or market conditions' beyond its bounds (0.0 to 1.0) are set to the bound.",
+      "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+      "This series measures company reporting, not independently verified adoption or incidents."
+     ]
+    }
+   ]
+  }
+ }
+}

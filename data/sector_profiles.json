@@ -1,0 +1,917 @@
+{
+ "source": "scenarioGPT SEC 10-K/10-Q AI passage classification (taxonomy v0.9), 30 panel firms per sector",
+ "periods": {
+  "early": "filings 2023-01 to 2024-06",
+  "late": "filings 2025-07 to 2026-06"
+ },
+ "sectors": {
+  "manufacturing": {
+   "firms": [
+    "ABBOTT LABORATORIES",
+    "ADVANCED MICRO DEVICES INC",
+    "AMGEN INC",
+    "AbbVie Inc.",
+    "Apple Inc.",
+    "BOEING CO",
+    "BOSTON SCIENTIFIC CORP",
+    "CATERPILLAR INC",
+    "COCA COLA CO",
+    "ELI LILLY & Co",
+    "Eaton Corp plc",
+    "GENERAL ELECTRIC CO",
+    "HONEYWELL INTERNATIONAL INC",
+    "INTUITIVE SURGICAL INC",
+    "JOHNSON & JOHNSON",
+    "KLA CORP",
+    "LAM RESEARCH CORP",
+    "MICRON TECHNOLOGY INC",
+    "Merck & Co., Inc.",
+    "NVIDIA CORP",
+    "PEPSICO INC",
+    "PFIZER INC",
+    "PROCTER & GAMBLE Co",
+    "Philip Morris International Inc.",
+    "QUALCOMM INC",
+    "RTX Corp",
+    "STRYKER CORP",
+    "TEXAS INSTRUMENTS INC",
+    "THERMO FISHER SCIENTIFIC INC.",
+    "Tesla, Inc."
+   ],
+   "business_functions": [
+    {
+     "value": "rd_product",
+     "firms_early": 7,
+     "firms_late": 18
+    },
+    {
+     "value": "operations",
+     "firms_early": 5,
+     "firms_late": 13
+    },
+    {
+     "value": "it_cybersecurity",
+     "firms_early": 3,
+     "firms_late": 9
+    },
+    {
+     "value": "hr_workforce",
+     "firms_early": 3,
+     "firms_late": 7
+    },
+    {
+     "value": "decision_analytics",
+     "firms_early": 1,
+     "firms_late": 6
+    },
+    {
+     "value": "marketing_sales",
+     "firms_early": 2,
+     "firms_late": 4
+    },
+    {
+     "value": "manufacturing",
+     "firms_early": 0,
+     "firms_late": 3
+    },
+    {
+     "value": "customer_service",
+     "firms_early": 0,
+     "firms_late": 2
+    }
+   ],
+   "risk_types": [
+    {
+     "value": "cybersecurity",
+     "firms_early": 22,
+     "firms_late": 27
+    },
+    {
+     "value": "regulatory_legal",
+     "firms_early": 17,
+     "firms_late": 25
+    },
+    {
+     "value": "operational_reliability",
+     "firms_early": 10,
+     "firms_late": 22
+    },
+    {
+     "value": "strategic_competitive",
+     "firms_early": 11,
+     "firms_late": 22
+    },
+    {
+     "value": "reputational_ethical",
+     "firms_early": 9,
+     "firms_late": 18
+    },
+    {
+     "value": "third_party",
+     "firms_early": 2,
+     "firms_late": 9
+    },
+    {
+     "value": "information_integrity",
+     "firms_early": 1,
+     "firms_late": 8
+    },
+    {
+     "value": "market_demand",
+     "firms_early": 3,
+     "firms_late": 7
+    }
+   ],
+   "mit_subdomains": [
+    {
+     "value": "ai_system_security_vulnerabilities_attacks",
+     "firms_early": 14,
+     "firms_late": 23
+    },
+    {
+     "value": "compromise_of_privacy",
+     "firms_early": 10,
+     "firms_late": 22
+    },
+    {
+     "value": "regulation_lagging_behind_ai",
+     "firms_early": 8,
+     "firms_late": 20
+    },
+    {
+     "value": "lack_of_capability_robustness",
+     "firms_early": 9,
+     "firms_late": 20
+    },
+    {
+     "value": "cyberattacks_weapons_mass_harm",
+     "firms_early": 14,
+     "firms_late": 16
+    },
+    {
+     "value": "false_or_misleading_information",
+     "firms_early": 6,
+     "firms_late": 16
+    },
+    {
+     "value": "unfair_discrimination_misrepresentation",
+     "firms_early": 5,
+     "firms_late": 14
+    },
+    {
+     "value": "fraud_scams_targeted_manipulation",
+     "firms_early": 4,
+     "firms_late": 13
+    }
+   ],
+   "ai_kinds": [
+    {
+     "value": "traditional_ml",
+     "firms_early": 16,
+     "firms_late": 19
+    },
+    {
+     "value": "generative_llm",
+     "firms_early": 11,
+     "firms_late": 18
+    },
+    {
+     "value": "agentic",
+     "firms_early": 1,
+     "firms_late": 8
+    },
+    {
+     "value": "computer_vision",
+     "firms_early": 3,
+     "firms_late": 4
+    },
+    {
+     "value": "recommendation",
+     "firms_early": 1,
+     "firms_late": 2
+    },
+    {
+     "value": "nlp",
+     "firms_early": 3,
+     "firms_late": 2
+    }
+   ],
+   "governance_responses": [
+    {
+     "value": "policies_processes",
+     "firms_early": 3,
+     "firms_late": 10
+    },
+    {
+     "value": "oversight_structure",
+     "firms_early": 0,
+     "firms_late": 4
+    },
+    {
+     "value": "technical_controls",
+     "firms_early": 0,
+     "firms_late": 4
+    },
+    {
+     "value": "workforce_measures",
+     "firms_early": 0,
+     "firms_late": 2
+    },
+    {
+     "value": "transparency_accountability",
+     "firms_early": 0,
+     "firms_late": 1
+    }
+   ],
+   "roles": [
+    {
+     "value": "risk",
+     "firms_early": 24,
+     "firms_late": 29
+    },
+    {
+     "value": "adoption",
+     "firms_early": 16,
+     "firms_late": 25
+    },
+    {
+     "value": "governance",
+     "firms_early": 3,
+     "firms_late": 14
+    },
+    {
+     "value": "offering",
+     "firms_early": 8,
+     "firms_late": 13
+    },
+    {
+     "value": "market_driver",
+     "firms_early": 8,
+     "firms_late": 12
+    },
+    {
+     "value": "general",
+     "firms_early": 1,
+     "firms_late": 6
+    }
+   ],
+   "adoption_stage": [
+    {
+     "value": "deployed",
+     "firms_early": 14,
+     "firms_late": 24
+    },
+    {
+     "value": "planned",
+     "firms_early": 3,
+     "firms_late": 6
+    }
+   ],
+   "example_passages": {
+    "business_functions": {
+     "rd_product": [
+      "Philip Morris International Inc.: This investment includes the building of world-class scientific assessment capabilities, notably in the areas of pre-clinical systems toxicology, clinical and behavioral research, as well as post-market studies.",
+      "Philip Morris International Inc.: The report included publications in various scientific fields including aerosol chemistry and physics, standard and systems toxicology, clinical studies on exposure reduction to HPHCs, and observational studies."
+     ],
+     "operations": [
+      "STRYKER CORP: Our use of AI and other emerging technologies could adversely impact our business and financial results: We have begun to deploy AI and other emerging technologies in various facets of our operations and products and we continue to",
+      "THERMO FISHER SCIENTIFIC INC.: Competitive factors include technological innovation, including the timely, responsible and effective adoption of emerging technologies (such as AI), price, service and delivery, breadth of product line, customer support, e-business capabilities and the abilit"
+     ],
+     "it_cybersecurity": [
+      "ADVANCED MICRO DEVICES INC: As AI capabilities improve and are increasingly adopted, we may see more sophisticated threats created through the use of AI technology to launch more automated, targeted and coordinated cyberattacks.",
+      "ADVANCED MICRO DEVICES INC: In March 2025, the Company completed the acquisition of ZT Group Int\u2019l, Inc. (ZT Systems), a provider of AI and general-purpose compute infrastructure for hyperscale computing companies, for total purchase consideration of $ 4.4 billion, consisting of $ 3.2 bi"
+     ],
+     "hr_workforce": [
+      "AMGEN INC: In 2025, we invested in general upskilling of our staff on skills for the future, including topics such as AI.",
+      "MICRON TECHNOLOGY INC: We equip our team members with the latest AI tools and training to unlock human potential and labor productivity."
+     ]
+    },
+    "risk_types": {
+     "cybersecurity": [
+      "ADVANCED MICRO DEVICES INC: As AI capabilities improve and are increasingly adopted, we may see more sophisticated threats created through the use of AI technology to launch more automated, targeted and coordinated cyberattacks.",
+      "ADVANCED MICRO DEVICES INC: Issues related to the responsible use of AI may result in reputational, competitive and financial harm and liability."
+     ],
+     "regulatory_legal": [
+      "ADVANCED MICRO DEVICES INC: New emerging technology trends, such as AI, require us to keep pace with evolving regulations and industry standards.",
+      "ADVANCED MICRO DEVICES INC: Issues related to the responsible use of AI may result in reputational, competitive and financial harm and liability."
+     ],
+     "operational_reliability": [
+      "ADVANCED MICRO DEVICES INC: As AI capabilities improve and are increasingly adopted, we may see more sophisticated threats created through the use of AI technology to launch more automated, targeted and coordinated cyberattacks.",
+      "ADVANCED MICRO DEVICES INC: Issues related to the responsible use of AI may result in reputational, competitive and financial harm and liability."
+     ],
+     "strategic_competitive": [
+      "LAM RESEARCH CORP: In addition, the emergence of \u201cbig data\u201d and new tools such as machine learning and artificial intelligence (\u201cAI\u201d) that capitalize on the availability of large data sets is leading semiconductor manufacturers and equipment manufacturers to pursue new products ",
+      "LAM RESEARCH CORP: In addition, the fact that we offer limited product lines creates the risk that our customers may view us as less important to their business than our competitors that offer additional products and/or product capabilities, including new products that take adva"
+     ]
+    }
+   }
+  },
+  "it": {
+   "firms": [
+    "ADOBE INC.",
+    "AMAZON COM INC",
+    "AMERICAN TOWER CORP",
+    "AT&T INC.",
+    "AUTOMATIC DATA PROCESSING INC",
+    "Airbnb, Inc.",
+    "Alphabet Inc.",
+    "AppLovin Corp",
+    "Arista Networks, Inc.",
+    "Autodesk, Inc.",
+    "Broadcom Inc.",
+    "CADENCE DESIGN SYSTEMS INC",
+    "CISCO SYSTEMS, INC.",
+    "COMCAST CORP",
+    "CrowdStrike Holdings, Inc.",
+    "EQUINIX INC",
+    "INTERNATIONAL BUSINESS MACHINES CORP",
+    "INTUIT INC.",
+    "MERCADOLIBRE INC",
+    "MICROSOFT CORP",
+    "Meta Platforms, Inc.",
+    "ORACLE CORP",
+    "Palantir Technologies Inc.",
+    "Palo Alto Networks Inc",
+    "SHOPIFY INC.",
+    "Salesforce, Inc.",
+    "ServiceNow, Inc.",
+    "Snowflake Inc.",
+    "T-Mobile US, Inc.",
+    "VERIZON COMMUNICATIONS INC"
+   ],
+   "business_functions": [
+    {
+     "value": "rd_product",
+     "firms_early": 19,
+     "firms_late": 24
+    },
+    {
+     "value": "it_cybersecurity",
+     "firms_early": 10,
+     "firms_late": 23
+    },
+    {
+     "value": "decision_analytics",
+     "firms_early": 8,
+     "firms_late": 18
+    },
+    {
+     "value": "operations",
+     "firms_early": 12,
+     "firms_late": 16
+    },
+    {
+     "value": "marketing_sales",
+     "firms_early": 3,
+     "firms_late": 14
+    },
+    {
+     "value": "hr_workforce",
+     "firms_early": 4,
+     "firms_late": 14
+    },
+    {
+     "value": "customer_service",
+     "firms_early": 7,
+     "firms_late": 11
+    },
+    {
+     "value": "finance",
+     "firms_early": 2,
+     "firms_late": 4
+    }
+   ],
+   "risk_types": [
+    {
+     "value": "strategic_competitive",
+     "firms_early": 23,
+     "firms_late": 30
+    },
+    {
+     "value": "cybersecurity",
+     "firms_early": 20,
+     "firms_late": 30
+    },
+    {
+     "value": "regulatory_legal",
+     "firms_early": 27,
+     "firms_late": 30
+    },
+    {
+     "value": "reputational_ethical",
+     "firms_early": 22,
+     "firms_late": 28
+    },
+    {
+     "value": "operational_reliability",
+     "firms_early": 21,
+     "firms_late": 28
+    },
+    {
+     "value": "workforce",
+     "firms_early": 7,
+     "firms_late": 21
+    },
+    {
+     "value": "market_demand",
+     "firms_early": 11,
+     "firms_late": 19
+    },
+    {
+     "value": "third_party",
+     "firms_early": 6,
+     "firms_late": 17
+    }
+   ],
+   "mit_subdomains": [
+    {
+     "value": "lack_of_capability_robustness",
+     "firms_early": 17,
+     "firms_late": 28
+    },
+    {
+     "value": "ai_system_security_vulnerabilities_attacks",
+     "firms_early": 17,
+     "firms_late": 28
+    },
+    {
+     "value": "regulation_lagging_behind_ai",
+     "firms_early": 21,
+     "firms_late": 27
+    },
+    {
+     "value": "compromise_of_privacy",
+     "firms_early": 21,
+     "firms_late": 25
+    },
+    {
+     "value": "unfair_discrimination_misrepresentation",
+     "firms_early": 18,
+     "firms_late": 24
+    },
+    {
+     "value": "inequality_decline_employment_quality",
+     "firms_early": 8,
+     "firms_late": 22
+    },
+    {
+     "value": "cyberattacks_weapons_mass_harm",
+     "firms_early": 8,
+     "firms_late": 21
+    },
+    {
+     "value": "false_or_misleading_information",
+     "firms_early": 17,
+     "firms_late": 21
+    }
+   ],
+   "ai_kinds": [
+    {
+     "value": "traditional_ml",
+     "firms_early": 25,
+     "firms_late": 27
+    },
+    {
+     "value": "generative_llm",
+     "firms_early": 20,
+     "firms_late": 25
+    },
+    {
+     "value": "agentic",
+     "firms_early": 2,
+     "firms_late": 20
+    },
+    {
+     "value": "nlp",
+     "firms_early": 11,
+     "firms_late": 3
+    },
+    {
+     "value": "recommendation",
+     "firms_early": 1,
+     "firms_late": 1
+    },
+    {
+     "value": "computer_vision",
+     "firms_early": 1,
+     "firms_late": 1
+    }
+   ],
+   "governance_responses": [
+    {
+     "value": "policies_processes",
+     "firms_early": 11,
+     "firms_late": 18
+    },
+    {
+     "value": "oversight_structure",
+     "firms_early": 3,
+     "firms_late": 7
+    },
+    {
+     "value": "technical_controls",
+     "firms_early": 3,
+     "firms_late": 7
+    },
+    {
+     "value": "transparency_accountability",
+     "firms_early": 0,
+     "firms_late": 3
+    },
+    {
+     "value": "workforce_measures",
+     "firms_early": 0,
+     "firms_late": 2
+    }
+   ],
+   "roles": [
+    {
+     "value": "risk",
+     "firms_early": 29,
+     "firms_late": 30
+    },
+    {
+     "value": "adoption",
+     "firms_early": 23,
+     "firms_late": 29
+    },
+    {
+     "value": "offering",
+     "firms_early": 21,
+     "firms_late": 25
+    },
+    {
+     "value": "market_driver",
+     "firms_early": 15,
+     "firms_late": 22
+    },
+    {
+     "value": "governance",
+     "firms_early": 11,
+     "firms_late": 20
+    },
+    {
+     "value": "general",
+     "firms_early": 4,
+     "firms_late": 15
+    }
+   ],
+   "adoption_stage": [
+    {
+     "value": "deployed",
+     "firms_early": 21,
+     "firms_late": 28
+    },
+    {
+     "value": "planned",
+     "firms_early": 12,
+     "firms_late": 17
+    }
+   ],
+   "example_passages": {
+    "business_functions": {
+     "rd_product": [
+      "INTERNATIONAL BUSINESS MACHINES CORP: The year-to-year increase in R&D expense reflects our organic and inorganic investments to drive innovation in AI, hybrid cloud and quantum, and the effects of currency.",
+      "Alphabet Inc.: certain AI-focused shared research and development activities, including employee compensation expenses and technical infrastructure usage costs associated with the development of our general AI models;"
+     ],
+     "it_cybersecurity": [
+      "Alphabet Inc.: On March 11, 2026, we completed our acquisition of Wiz for $ 29.5 billion, after purchase price adjustments and excluding post combination compensation arrangements.",
+      "Alphabet Inc.: The investments that we are making across our businesses \u2014 such as building AI-optimized infrastructure, including our custom TPUs, and integrating AI capabilities into new and existing products and services \u2014 reflect our ongoing efforts to innovate and provid"
+     ],
+     "decision_analytics": [
+      "MERCADOLIBRE INC: Our product and technology development related expenses consist primarily of compensation for our engineering and web-development staff (including long term retention program compensation), depreciation and amortization expenses related to product and technolo",
+      "CISCO SYSTEMS, INC.: We are incorporating artificial intelligence (AI) into our product portfolios across networking, security, collaboration and observability as well as integrating our products more tightly together."
+     ],
+     "operations": [
+      "Snowflake Inc.: Successful execution of our AI strategy depends on effective product development, partner relationships, and use of AI in internal operations, as well as favorable customer demand and competitive dynamics.",
+      "AT&T INC.: Further, we are using and intend to further use AI-driven efficiencies in our network design and operations, software development, sales, marketing, customer support services and general and administrative costs."
+     ]
+    },
+    "risk_types": {
+     "regulatory_legal": [
+      "ADOBE INC.: These local, state, federal and international laws and regulations relate to a number of aspects of our business, including trade laws such as import and export controls, anti-boycott, economic sanctions and embargoes, data and transaction processing security,",
+      "CISCO SYSTEMS, INC.: Additionally, some U.S. governmental entities and courts have expressed a position that U.S. copyright and patent protection should be limited to protecting inventions and works of authorship created by humans. Therefore, U.S. copyright or patent protection fo"
+     ],
+     "cybersecurity": [
+      "INTUIT INC.: We operate in industries that are experiencing an increasing amount of fraudulent activities by malicious third parties, and those fraudulent activities are becoming increasingly sophisticated, including through the use of AI.",
+      "INTUIT INC.: In addition, techniques used to obtain unauthorized access to sensitive information change frequently and, as technologies like AI develop rapidly, malicious third parties are using these technologies to create new sophisticated attack methods that are increas"
+     ],
+     "strategic_competitive": [
+      "INTUIT INC.: Our growth strategy depends upon our ability to innovate, develop, and introduce emerging technologies, including AI and GenAI, to drive broad adoption of our products and services and enter new markets.",
+      "AppLovin Corp: Our ability to improve the effectiveness and predictability of our advertising recommendations through improvements to Axon AI, our advertising recommendation system, is critical to our continuing success and future growth."
+     ],
+     "operational_reliability": [
+      "ADOBE INC.: We rely on third-party service providers and technologies to deliver our products, services and business operations and to operate critical business systems, such as cloud-based infrastructure, data center facilities, generative AI, encryption and authenticati",
+      "INTUIT INC.: In addition, techniques used to obtain unauthorized access to sensitive information change frequently and, as technologies like AI develop rapidly, malicious third parties are using these technologies to create new sophisticated attack methods that are increas"
+     ]
+    }
+   }
+  },
+  "banking": {
+   "firms": [
+    "AMERICAN EXPRESS CO",
+    "Arthur J. Gallagher & Co.",
+    "BANK OF AMERICA CORP",
+    "BERKSHIRE HATHAWAY INC",
+    "BlackRock, Inc.",
+    "Blackstone Inc.",
+    "CAPITAL ONE FINANCIAL CORP",
+    "CITIGROUP INC",
+    "CME GROUP INC.",
+    "Cigna Group",
+    "Coinbase Global, Inc.",
+    "Elevance Health, Inc.",
+    "GOLDMAN SACHS GROUP INC",
+    "Intercontinental Exchange, Inc.",
+    "JPMORGAN CHASE & CO",
+    "KKR & Co. Inc.",
+    "MARSH & MCLENNAN COMPANIES, INC.",
+    "MOODYS CORP",
+    "MORGAN STANLEY",
+    "Mastercard Inc",
+    "PNC FINANCIAL SERVICES GROUP, INC.",
+    "PROGRESSIVE CORP",
+    "PayPal Holdings, Inc.",
+    "Robinhood Markets, Inc.",
+    "S&P Global Inc.",
+    "SCHWAB CHARLES CORP",
+    "UNITEDHEALTH GROUP INC",
+    "US BANCORP \\DE\\",
+    "VISA INC.",
+    "WELLS FARGO & COMPANY"
+   ],
+   "business_functions": [
+    {
+     "value": "decision_analytics",
+     "firms_early": 9,
+     "firms_late": 16
+    },
+    {
+     "value": "operations",
+     "firms_early": 10,
+     "firms_late": 12
+    },
+    {
+     "value": "rd_product",
+     "firms_early": 2,
+     "firms_late": 10
+    },
+    {
+     "value": "hr_workforce",
+     "firms_early": 2,
+     "firms_late": 10
+    },
+    {
+     "value": "customer_service",
+     "firms_early": 5,
+     "firms_late": 7
+    },
+    {
+     "value": "it_cybersecurity",
+     "firms_early": 4,
+     "firms_late": 7
+    },
+    {
+     "value": "finance",
+     "firms_early": 4,
+     "firms_late": 5
+    },
+    {
+     "value": "marketing_sales",
+     "firms_early": 2,
+     "firms_late": 3
+    }
+   ],
+   "risk_types": [
+    {
+     "value": "regulatory_legal",
+     "firms_early": 20,
+     "firms_late": 27
+    },
+    {
+     "value": "operational_reliability",
+     "firms_early": 22,
+     "firms_late": 26
+    },
+    {
+     "value": "cybersecurity",
+     "firms_early": 18,
+     "firms_late": 26
+    },
+    {
+     "value": "strategic_competitive",
+     "firms_early": 17,
+     "firms_late": 24
+    },
+    {
+     "value": "reputational_ethical",
+     "firms_early": 17,
+     "firms_late": 22
+    },
+    {
+     "value": "information_integrity",
+     "firms_early": 4,
+     "firms_late": 13
+    },
+    {
+     "value": "third_party",
+     "firms_early": 5,
+     "firms_late": 10
+    },
+    {
+     "value": "market_demand",
+     "firms_early": 2,
+     "firms_late": 7
+    }
+   ],
+   "mit_subdomains": [
+    {
+     "value": "ai_system_security_vulnerabilities_attacks",
+     "firms_early": 12,
+     "firms_late": 23
+    },
+    {
+     "value": "false_or_misleading_information",
+     "firms_early": 8,
+     "firms_late": 22
+    },
+    {
+     "value": "lack_of_capability_robustness",
+     "firms_early": 17,
+     "firms_late": 22
+    },
+    {
+     "value": "fraud_scams_targeted_manipulation",
+     "firms_early": 9,
+     "firms_late": 21
+    },
+    {
+     "value": "compromise_of_privacy",
+     "firms_early": 11,
+     "firms_late": 20
+    },
+    {
+     "value": "unfair_discrimination_misrepresentation",
+     "firms_early": 10,
+     "firms_late": 19
+    },
+    {
+     "value": "regulation_lagging_behind_ai",
+     "firms_early": 14,
+     "firms_late": 18
+    },
+    {
+     "value": "cyberattacks_weapons_mass_harm",
+     "firms_early": 10,
+     "firms_late": 15
+    }
+   ],
+   "ai_kinds": [
+    {
+     "value": "generative_llm",
+     "firms_early": 20,
+     "firms_late": 22
+    },
+    {
+     "value": "traditional_ml",
+     "firms_early": 18,
+     "firms_late": 21
+    },
+    {
+     "value": "agentic",
+     "firms_early": 0,
+     "firms_late": 12
+    },
+    {
+     "value": "nlp",
+     "firms_early": 0,
+     "firms_late": 2
+    },
+    {
+     "value": "computer_vision",
+     "firms_early": 1,
+     "firms_late": 1
+    }
+   ],
+   "governance_responses": [
+    {
+     "value": "policies_processes",
+     "firms_early": 7,
+     "firms_late": 17
+    },
+    {
+     "value": "oversight_structure",
+     "firms_early": 4,
+     "firms_late": 10
+    },
+    {
+     "value": "technical_controls",
+     "firms_early": 1,
+     "firms_late": 6
+    },
+    {
+     "value": "workforce_measures",
+     "firms_early": 0,
+     "firms_late": 2
+    },
+    {
+     "value": "third_party_controls",
+     "firms_early": 0,
+     "firms_late": 1
+    },
+    {
+     "value": "transparency_accountability",
+     "firms_early": 0,
+     "firms_late": 1
+    }
+   ],
+   "roles": [
+    {
+     "value": "risk",
+     "firms_early": 26,
+     "firms_late": 29
+    },
+    {
+     "value": "adoption",
+     "firms_early": 21,
+     "firms_late": 27
+    },
+    {
+     "value": "market_driver",
+     "firms_early": 6,
+     "firms_late": 19
+    },
+    {
+     "value": "governance",
+     "firms_early": 9,
+     "firms_late": 19
+    },
+    {
+     "value": "general",
+     "firms_early": 6,
+     "firms_late": 14
+    },
+    {
+     "value": "offering",
+     "firms_early": 6,
+     "firms_late": 10
+    },
+    {
+     "value": "incident",
+     "firms_early": 0,
+     "firms_late": 1
+    }
+   ],
+   "adoption_stage": [
+    {
+     "value": "deployed",
+     "firms_early": 18,
+     "firms_late": 26
+    },
+    {
+     "value": "planned",
+     "firms_early": 6,
+     "firms_late": 10
+    }
+   ],
+   "example_passages": {
+    "business_functions": {
+     "decision_analytics": [
+      "S&P Global Inc.: This acquisition is part of our Market Intelligence segment and strengthens our customer-centric approach to data, technology, and AI by meaningfully enhancing the ability to link datasets across classes and platforms.",
+      "S&P Global Inc.: This acquisition is part of our Market Intelligence segment and strengthens our customer-centric approach to data, technology, and AI by meaningfully enhancing the ability to link datasets across classes and platforms."
+     ],
+     "operations": [
+      "Coinbase Global, Inc.: We obtain and process large amounts of sensitive data, including personal data related to our customers and their transactions, such as their names, addresses, social security numbers, visa information, copies of government-issued identification, facial recogn",
+      "PayPal Holdings, Inc.: This strategic reorganization and business simplification program, which will focus on realigning our operating structure and accelerating the adoption of Artificial Intelligence and automation across the company, is expected to deliver at least $1.5 billion i"
+     ],
+     "rd_product": [
+      "PayPal Holdings, Inc.: We use AI and machine learning technologies in various aspects of our business, including fraud prevention, risk management, product optimization and customer service.",
+      "BlackRock, Inc.: BlackRock is focused on enhancing Aladdin, with continued investment into areas such as AI, whole portfolio, private markets, and wealth."
+     ],
+     "hr_workforce": [
+      "Coinbase Global, Inc.: On May 5, 2026, the Company announced a restructuring plan (the \"Restructuring Plan\") to (i) manage its operating expenses in response to current market conditions and (ii) optimize the Company\u2019s operations for the AI era.",
+      "Coinbase Global, Inc.: We anticipate this plan will help us better align our operating expenses with current market conditions and optimize our operations for the AI era."
+     ]
+    },
+    "risk_types": {
+     "regulatory_legal": [
+      "PayPal Holdings, Inc.: We use AI and machine learning technologies in various aspects of our business, including fraud prevention, risk management, product optimization and customer service.",
+      "PayPal Holdings, Inc.: The legal and regulatory environment relating to privacy and data protection laws continues to develop and evolve in ways we cannot predict, including with respect to technologies such as cloud computing, AI (including generative AI), cryptocurrency, and block"
+     ],
+     "operational_reliability": [
+      "PayPal Holdings, Inc.: We expect that new technologies applicable to the industries in which we operate, including the development, adoption, and use of generative AI technologies and autonomous AI agents, will continue to emerge and may be superior to, or render obsolete, the techn",
+      "CITIGROUP INC: risks to Citi from the development and use of AI, including ineffective, inadequate or faulty Generative AI development or deployment practices by Citi or third parties; increased risk of fraud, disinformation and market manipulation campaigns; discovery and e"
+     ],
+     "cybersecurity": [
+      "CITIGROUP INC: risks to Citi from the development and use of AI, including ineffective, inadequate or faulty Generative AI development or deployment practices by Citi or third parties; increased risk of fraud, disinformation and market manipulation campaigns; discovery and e",
+      "BANK OF AMERICA CORP: Also, the use of cyberattacks or campaigns, cyberespionage or other unauthorized access to networks and systems by nation states or their proxies, including utilizing emerging technologies such as AI, has increased and threatens our and our third parties\u2019 oper"
+     ],
+     "strategic_competitive": [
+      "PayPal Holdings, Inc.: We expect that new technologies applicable to the industries in which we operate, including the development, adoption, and use of generative AI technologies and autonomous AI agents, will continue to emerge and may be superior to, or render obsolete, the techn",
+      "CITIGROUP INC: risks to Citi from the development and use of AI, including ineffective, inadequate or faulty Generative AI development or deployment practices by Citi or third parties; increased risk of fraud, disinformation and market manipulation campaigns; discovery and e"
+     ]
+    }
+   }
+  }
+ }
+}

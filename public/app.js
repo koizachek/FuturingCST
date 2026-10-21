@@ -10,6 +10,10 @@ const cursor = document.querySelector("#cursor");
 const themeToggle = document.querySelector("#theme-toggle");
 const mobileResults = document.querySelector("#mobile-results");
 const mobileMedia = window.matchMedia("(max-width: 760px)");
+const aboutDialog = document.querySelector("#about-dialog");
+document.querySelector("#about-open").addEventListener("click", () => aboutDialog.showModal());
+document.querySelector("#about-close").addEventListener("click", () => aboutDialog.close());
+aboutDialog.addEventListener("click", (event) => { if (event.target === aboutDialog) aboutDialog.close(); });
 const purposeChoice = document.querySelector("#purpose-choice");
 const purposeInput = document.querySelector("#purpose");
 
@@ -31,6 +35,7 @@ let preferredScenarioId = null;
 let frameId = null;
 let chatThreads = new Map();
 let ratings = new Map();
+const sessionId = crypto.randomUUID();
 let generationComplete = false;
 let animationOn = false;
 let fontsLoaded = false;
@@ -187,7 +192,7 @@ async function submitForm(event) {
   if (!isMobile()) startAnimation();
 
   const formData = new FormData(form);
-  const payload = Object.fromEntries(formData.entries());
+  const payload = { ...Object.fromEntries(formData.entries()), sessionId };
   const startedAt = performance.now();
 
   try {
@@ -379,7 +384,7 @@ function addHorizon(years, scenarios) {
       payload: scenario,
       nx: column.nx,
       ny: span(index, scenarios.length, 0.32, 0.66),
-      r: 6,
+      r: 10,
       labelSide: "top",
       appearAt: base + index * 220
     });
@@ -666,6 +671,20 @@ function drawNode(node, progress, now) {
 
   ctx.globalAlpha = progress;
 
+  // scenarios carry a double ring so they stand apart from the frame nodes
+  if (node.type === "scenario") {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 3]);
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, radius + 9, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, radius + 4, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
   // selection ring in the accent color so the chosen trace stands out
   if (selected) {
     ctx.strokeStyle = theme.accent;
@@ -694,7 +713,8 @@ function drawLabel(node, color, progress, active) {
   const coord = active ? `${node.nx.toFixed(2)} / ${node.ny.toFixed(2)}` : "";
 
   const tagFont = "11px 'Space Mono', ui-monospace, monospace";
-  const textFont = "14px 'Space Mono', ui-monospace, monospace";
+  const big = node.type === "scenario";
+  const textFont = `${big ? 17 : 14}px 'Space Mono', ui-monospace, monospace`;
   let metrics = node.labelMetrics;
   if (!metrics) {
     ctx.font = tagFont;
@@ -706,7 +726,7 @@ function drawLabel(node, color, progress, active) {
     if (fontsLoaded) node.labelMetrics = metrics;
   }
   const blockW = Math.max(metrics.tagW, metrics.textW, coord ? 70 : 0) + 12;
-  const blockH = coord ? 50 : 36;
+  const blockH = (coord ? 50 : 36) + (big ? 4 : 0);
 
   const pad = node.r + 8;
   const width = canvas.clientWidth;
@@ -757,11 +777,11 @@ function drawLabel(node, color, progress, active) {
   ctx.fillText(tag, tx, by + 13);
   ctx.fillStyle = active ? theme.labelTextActive : theme.labelText;
   ctx.font = textFont;
-  ctx.fillText(text, tx, by + 29);
+  ctx.fillText(text, tx, by + (big ? 32 : 29));
   if (coord) {
     ctx.fillStyle = theme.labelCoord;
     ctx.font = tagFont;
-    ctx.fillText(coord, tx, by + 44);
+    ctx.fillText(coord, tx, by + (big ? 48 : 44));
   }
 }
 
@@ -1000,12 +1020,18 @@ function renderSelection() {
     content = header("perspective", node.label) + `<p>${escapeHtml(node.payload?.concern || "")}</p>`;
   } else if (node.type === "scenario") {
     const payload = node.payload || {};
+    const paragraphs = String(payload.summary || "").split(/\n\s*\n/).filter(Boolean);
+    const data = payload.signals || [];
     content = header(`${payload.years || ""}y scenario`, payload.title || node.label) +
-      `<p>${escapeHtml(payload.summary || "")}</p>` +
-      renderMiniList("Indicators", payload.signals) +
-      (payload.outsideBandReason ? `<p class="metadata-line">outside band: ${escapeHtml(payload.outsideBandReason)}</p>` : "") +
-      renderMiniList("Risks", payload.risks) +
-      renderMiniList("Open questions", payload.openQuestions) +
+      `<div class="narrative">${paragraphs.map((text) => `<p>${escapeHtml(text)}</p>`).join("")}</div>` +
+      (data.length ? `
+        <details class="data-block">
+          <summary>Indicators · Timestral data (${data.length})</summary>
+          <ul>${data.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+          ${payload.outsideBandReason ? `<p class="metadata-line">outside band: ${escapeHtml(payload.outsideBandReason)}</p>` : ""}
+        </details>` : "") +
+      renderMiniList("Risk", payload.risks) +
+      renderMiniList("Open question", payload.openQuestions) +
       renderRatings(node.id);
   }
 
@@ -1103,7 +1129,9 @@ async function handleChatSubmit(event) {
         message,
         history,
         trace: buildTraceContext(node),
-        project: buildProjectContext()
+        project: buildProjectContext(),
+        runId: latestData?.runId || "",
+        sessionId
       })
     });
 
@@ -1172,6 +1200,7 @@ function header(tag, title) {
     <div class="selection-header">
       <span>${escapeHtml(tag)}</span>
       <h2>${escapeHtml(title || "")}</h2>
+      <button type="button" class="close-detail" data-close aria-label="Close">×</button>
     </div>`;
 }
 
@@ -1196,12 +1225,31 @@ function renderRatings(scenarioId) {
 }
 
 function handleRatingClick(event) {
+  if (event.target.closest("[data-close]")) {
+    selectedNodeId = null;
+    closeDetailPanel();
+    return;
+  }
   const button = event.target.closest("[data-rating]");
   if (!button || !selectedNodeId) return;
   const current = ratings.get(selectedNodeId) || {};
   current[button.dataset.rating] = Number(button.dataset.value);
   ratings.set(selectedNodeId, current);
   renderSelection();
+  const scenario = graph.index.get(selectedNodeId)?.payload || {};
+  fetch("/api/rating", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      runId: latestData?.runId || "",
+      sessionId,
+      scenarioId: selectedNodeId,
+      scenarioTitle: scenario.title || "",
+      years: scenario.years || null,
+      criterion: button.dataset.rating,
+      value: Number(button.dataset.value)
+    })
+  }).catch(() => {});
 }
 
 function renderMiniList(title, items) {

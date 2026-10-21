@@ -2,6 +2,8 @@ import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { randomUUID } from "node:crypto";
+import { MongoClient } from "mongodb";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,7 +16,8 @@ const host = process.env.HOST || "0.0.0.0";
 
 const HORIZON_YEARS = [2, 5, 10];
 const SECTORS = { manufacturing: "Manufacturing", banking: "Banking (finance and insurance)", it: "IT (software, IT and telecommunications)" };
-const forecasts = JSON.parse(fs.readFileSync(path.join(__dirname, "data", "timestral_forecasts.json"), "utf8"));
+const scenarioRuns = JSON.parse(fs.readFileSync(path.join(__dirname, "data", "timestral_scenarios.json"), "utf8"));
+const sectorProfiles = JSON.parse(fs.readFileSync(path.join(__dirname, "data", "sector_profiles.json"), "utf8"));
 const RATE_LIMIT_WINDOW_MS = Number(process.env.RATE_LIMIT_WINDOW_MS || 3600000);
 const rateBuckets = new Map();
 
@@ -44,6 +47,12 @@ const server = http.createServer(async (req, res) => {
     if (req.method === "POST" && url.pathname === "/api/chat") {
       enforceRateLimit(req, "chat", Number(process.env.RATE_LIMIT_CHAT || 60));
       await handleTraceChat(req, res);
+      return;
+    }
+
+    if (req.method === "POST" && url.pathname === "/api/rating") {
+      enforceRateLimit(req, "rating", Number(process.env.RATE_LIMIT_CHAT || 60));
+      await handleRating(req, res);
       return;
     }
 
@@ -127,7 +136,7 @@ function getBaseUrl() {
 }
 
 function getModelName() {
-  return process.env.LLM_MODEL || process.env.OPENROUTER_MODEL || "deepseek/deepseek-chat";
+  return process.env.LLM_MODEL || process.env.OPENROUTER_MODEL || "google/gemini-3.5-flash";
 }
 
 async function readJsonBody(req) {
@@ -163,8 +172,10 @@ async function handleExtrapolate(req, res) {
   let payload;
   let apiKey;
   let model;
+  let sessionId;
   try {
     const body = await readJsonBody(req);
+    sessionId = stringField(body.sessionId, 80);
     payload = sanitizeInput(body);
     apiKey = getApiKey();
     if (!apiKey) {
@@ -190,6 +201,10 @@ async function handleExtrapolate(req, res) {
   });
 
   const send = (event, data) => res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+  const runId = randomUUID();
+  const startedAt = Date.now();
+  const { sectorEvidence: _evidence, ...loggedInput } = payload;
+  const sectorKey = Object.keys(SECTORS).find((key) => SECTORS[key] === payload.sector);
 
   try {
     // Stage 1 — frame: title, reading, influence factors, perspectives.
@@ -211,10 +226,11 @@ async function handleExtrapolate(req, res) {
     // grows 2y -> 5y -> 10y.
     send("stage", { stage: "horizons", label: "Extrapolating 2/5/10-year futures" });
     const progressByYears = new Map();
+    const forecastsByYears = new Map(HORIZON_YEARS.map((years) => [years, scenarioForecasts(sectorKey, years)]));
     const horizonPromises = HORIZON_YEARS.map((years) =>
       callLlm(
         buildHorizonPrompt(years),
-        { input: payload, horizonYears: years, influenceFactors: frame.influenceFactors, perspectives: frame.perspectives },
+        { input: payload, horizonYears: years, scenarioForecasts: forecastsByYears.get(years), influenceFactors: frame.influenceFactors, perspectives: frame.perspectives },
         apiKey,
         model,
         (progress) => {
@@ -233,6 +249,7 @@ async function handleExtrapolate(req, res) {
     for (const [index, years] of HORIZON_YEARS.entries()) {
       const horizonRaw = await horizonPromises[index];
       const scenarios = normalizeScenarios(horizonRaw.scenarios, years, factorIds, perspectiveIds);
+      checkScenarioValues(scenarios, horizonRaw.scenarios, forecastsByYears.get(years));
       scenarios.forEach((scenario) => allScenarios.push(scenario));
       send("horizon", { years, scenarios });
     }
@@ -250,7 +267,24 @@ async function handleExtrapolate(req, res) {
     const mission = normalizeMission(missionRaw.mission, scenarioIds);
     send("mission", { mission });
 
+    const output = {
+      title: frame.title,
+      reading: frame.reading,
+      influenceFactors: frame.influenceFactors,
+      perspectives: frame.perspectives,
+      horizons: HORIZON_YEARS.map((years) => ({
+        years,
+        scenarios: allScenarios.filter((scenario) => scenario.years === years)
+      })),
+      mission
+    };
+    logEvent("extrapolation", {
+      runId, sessionId, input: loggedInput, timestralModel: scenarioRuns.model_id, output,
+      provider: getProviderName(), model, durationMs: Date.now() - startedAt
+    });
+
     send("done", {
+      runId,
       title: frame.title,
       reading: frame.reading,
       input: payload,
@@ -267,6 +301,7 @@ async function handleExtrapolate(req, res) {
     });
   } catch (error) {
     console.error(`[extrapolate] ${error.message}`);
+    logEvent("extrapolation_error", { runId, sessionId, input: loggedInput, error: error.message });
     send("error", { error: error.publicMessage || "LLM request failed." });
   } finally {
     res.end();
@@ -274,8 +309,9 @@ async function handleExtrapolate(req, res) {
 }
 
 async function handleTraceChat(req, res) {
+  let body;
   try {
-    const body = await readJsonBody(req);
+    body = await readJsonBody(req);
     const payload = sanitizeChatInput(body);
     const apiKey = getApiKey();
     if (!apiKey) {
@@ -297,9 +333,15 @@ async function handleTraceChat(req, res) {
       }
     );
 
-    sendJson(res, 200, {
-      reply: stringField(raw.reply, 1200) || "I can only discuss the selected futuring trace."
+    const reply = stringField(raw.reply, 1200) || "I can only discuss the selected futuring trace.";
+    logEvent("chat", {
+      runId: stringField(body.runId, 80),
+      sessionId: stringField(body.sessionId, 80),
+      trace: { id: payload.trace.id, type: payload.trace.type, title: payload.trace.title, years: payload.trace.years },
+      message: payload.message,
+      reply
     });
+    sendJson(res, 200, { reply });
   } catch (error) {
     const status = error.statusCode || 500;
     sendJson(res, status, {
@@ -307,6 +349,53 @@ async function handleTraceChat(req, res) {
       detail: status >= 500 ? undefined : error.message
     });
   }
+}
+
+const RATING_CRITERIA = new Set(["plausibility", "desirability"]);
+
+async function handleRating(req, res) {
+  const body = await readJsonBody(req);
+  const value = Number(body.value);
+  if (!RATING_CRITERIA.has(body.criterion) || !Number.isInteger(value) || value < 1 || value > 5) {
+    sendJson(res, 400, { error: "Invalid rating." });
+    return;
+  }
+  logEvent("rating", {
+    runId: stringField(body.runId, 80),
+    sessionId: stringField(body.sessionId, 80),
+    scenarioId: stringField(body.scenarioId, 80),
+    scenarioTitle: stringField(body.scenarioTitle, 140),
+    years: Number.isFinite(Number(body.years)) ? Number(body.years) : null,
+    criterion: body.criterion,
+    value
+  });
+  sendJson(res, 200, { ok: true });
+}
+
+// MongoDB logging of inputs, outputs, ratings, and chats; a no-op when the
+// MONGODB_* variables are missing, and a failed write never fails a request.
+let logCollection;
+
+function getLogCollection() {
+  if (logCollection !== undefined) return logCollection;
+  const { MONGODB_MAS_NAME: user, MONGODB_MAS_KEY: key, MONGODB_HOST: rawHost, MONGODB_DATABASE: database, MONGODB_COLLECTION: collection } = process.env;
+  if (!user || !key || !rawHost || !database || !collection) {
+    console.warn("MongoDB logging disabled: MONGODB_* variables are incomplete.");
+    logCollection = null;
+    return logCollection;
+  }
+  const host = rawHost.replace(/^mongodb(\+srv)?:\/\//, "").replace(/\/.*$/, "");
+  const scheme = /:\d+$/.test(host) ? "mongodb" : "mongodb+srv";
+  const client = new MongoClient(`${scheme}://${encodeURIComponent(user)}:${encodeURIComponent(key)}@${host}/?retryWrites=true&w=majority`);
+  logCollection = client.db(database).collection(collection);
+  return logCollection;
+}
+
+function logEvent(type, data) {
+  const collection = getLogCollection();
+  if (!collection) return;
+  collection.insertOne({ type, createdAt: new Date(), ...data })
+    .catch((error) => console.error(`[mongodb] ${type} log failed: ${error.message}`));
 }
 
 function sanitizeInput(input) {
@@ -323,24 +412,90 @@ function sanitizeInput(input) {
   }
 
   const sector = Object.hasOwn(SECTORS, input.sector) ? input.sector : "manufacturing";
-  return { sector: SECTORS[sector], purpose, assumptions, stakeholders, signals, timestral: sectorForecast(sector) };
+  return { sector: SECTORS[sector], purpose, assumptions, stakeholders, signals, criticalUncertainties: criticalUncertainties(sector), sectorEvidence: sectorEvidence(sector) };
 }
 
-// Timestral 10-90 % bands per measure and horizon, precomputed from the scenarioGPT data
-function sectorForecast(sector) {
-  const round = (value) => Math.round(value * 1000) / 1000;
-  return {
-    model: forecasts.model_id,
-    source: forecasts.source,
-    measures: forecasts.sectors[sector].map((series) => ({
-      name: series.name,
-      unit: series.unit,
-      lastObserved: { date: series.last_observed.date, value: round(series.last_observed.value) },
-      byHorizon: Object.fromEntries(Object.entries(series.by_horizon).map(([years, band]) => [
-        `${years}y`, { date: band.date, lower: round(band.lower), median: round(band.median), upper: round(band.upper) }
-      ]))
-    }))
+// what the sector's 30 panel firms disclose about AI, counted per category (early vs late period)
+function sectorEvidence(sector) {
+  const { firms, ...profile } = sectorProfiles.sectors[sector];
+  const label = (row) => `${row.value.replace(/_/g, " ")}: ${row.firms_early} -> ${row.firms_late} of ${firms.length} firms`;
+  const byGrowth = (rows) => [...rows].sort((a, b) => (b.firms_late - b.firms_early) - (a.firms_late - a.firms_early));
+  // the sector's strongest AI uses and fastest-growing risks anchor the driving forces
+  const keyDrivers = {
+    aiUses: profile.business_functions.slice(0, 3).map(label),
+    risks: byGrowth(profile.risk_types).slice(0, 2).map(label)
   };
+  return { source: sectorProfiles.source, periods: sectorProfiles.periods, firmCount: firms.length, exampleFirms: firms.slice(0, 12), keyDrivers, ...profile };
+}
+
+const pct = (value) => `${Math.round(value * 100)} %`;
+
+// the two quantified drivers of the sector, as in scenarioGPT: each has the
+// outcomes "accelerating" (observed slope per quarter) and "stalling" (hold)
+function criticalUncertainties(sector) {
+  return scenarioRuns.sectors[sector].drivers.map((driver) => ({
+    name: driver.name,
+    measure: driver.series_name,
+    history: `${pct(driver.values[0])} (${driver.dates[0].slice(0, 7)}) -> ${pct(driver.values.at(-1))} (${driver.dates.at(-1).slice(0, 7)})`,
+    outcomes: ["accelerating", "stalling"]
+  }));
+}
+
+function quartersBetween(from, to) {
+  const [fy, fm] = from.split("-").map(Number);
+  const [ty, tm] = to.split("-").map(Number);
+  return Math.round(((ty - fy) * 12 + (tm - fm)) / 3);
+}
+
+// Each scenario has its own Timestral-28M run, conditioned on its driver outcomes
+// (known covariates), precomputed with scenarioGPT's method; read at the horizon year.
+function scenarioForecasts(sector, years) {
+  const { drivers, backtest, scenarios } = scenarioRuns.sectors[sector];
+  const key = `${years}y`;
+  return scenarios.map((scenario, index) => {
+    const date = scenario.by_horizon[key][0].date;
+    return {
+      scenario: index + 1,
+      configuration: scenario.configuration.map((entry, i) => {
+        const steps = quartersBetween(drivers[i].dates.at(-1), date);
+        const value = Math.min(1, Math.max(0, entry.last_observed + entry.change_per_quarter * steps));
+        return { driver: entry.driver, outcome: entry.outcome, value: Math.round(value * 1000) / 1000, today: entry.last_observed };
+      }),
+      date,
+      backtest: `${backtest.inside} of ${backtest.observed} held-out values inside the 10-90 % band`,
+      series: scenario.by_horizon[key].map((band) => ({
+        series_id: band.series_id, name: band.name, today: band.last_observed,
+        lower: band.lower, median: band.median, upper: band.upper
+      }))
+    };
+  });
+}
+
+// Indicators come from the scenario's own forecast: driver values, then the
+// model's stated values checked against that forecast's 10-90 % band.
+function checkScenarioValues(scenarios, rawScenarios, forecasts) {
+  const raw = arrayOfObjects(rawScenarios);
+  scenarios.forEach((scenario, index) => {
+    const forecast = forecasts[index];
+    if (!forecast) return;
+    const year = forecast.date.slice(0, 4);
+    const byId = new Map(forecast.series.map((band) => [band.series_id, band]));
+    const configuration = forecast.configuration.map((entry) =>
+      `${entry.driver}: ${entry.outcome}, ${pct(entry.value)} by ${year} (today ${pct(entry.today)})`);
+    const reasons = [];
+    const values = arrayOfObjects(raw[index]?.values).map((item) => {
+      const band = byId.get(item.series_id);
+      const value = Number(item.value);
+      if (!band || !Number.isFinite(value)) return null;
+      const inside = band.lower <= value && value <= band.upper;
+      const reason = stringOr(item.outside_band_reason, "");
+      if (!inside) reasons.push(`${band.name}: ${reason || "no reason given"}`);
+      return `${band.name}: ${pct(value)} by ${year} (Timestral median ${pct(band.median)}, band ${pct(band.lower)}-${pct(band.upper)})${inside ? "" : " - outside band"}`;
+    }).filter(Boolean);
+    scenario.configuration = configuration;
+    scenario.signals = [...configuration, ...values, ...scenario.signals];
+    scenario.outsideBandReason = reasons.join("; ");
+  });
 }
 
 function stringField(value, maxLength) {
@@ -424,7 +579,9 @@ async function callLlm(systemPrompt, userContent, apiKey, model, onProgress, opt
     try {
       return await callLlmOnce(systemPrompt, userContent, apiKey, model, onProgress, options);
     } catch (error) {
-      if (!error.retryable || attempt >= attempts) throw error;
+      // dropped streams ("terminated", socket resets) are transient as well
+      const dropped = error instanceof TypeError || /terminated|ECONNRESET|socket/i.test(error.message || "");
+      if (!(error.retryable || dropped) || attempt >= attempts) throw error;
       await new Promise((resolve) => setTimeout(resolve, 1500 * attempt));
     }
   }
@@ -448,7 +605,10 @@ async function callLlmOnce(systemPrompt, userContent, apiKey, model, onProgress,
       body: JSON.stringify({
         model,
         temperature: Number(options.temperature ?? 0.7),
-        max_tokens: Number(options.maxTokens || process.env.LLM_MAX_TOKENS || 2200),
+        // reasoning models (e.g. Gemini 3.5 Flash) spend output tokens on thinking,
+        // so the answer budget gets headroom and thinking is kept low and hidden
+        max_tokens: Number(options.maxTokens || process.env.LLM_MAX_TOKENS || 2200) + Number(process.env.LLM_REASONING_TOKENS || 4000),
+        reasoning: { effort: process.env.LLM_REASONING_EFFORT || "low", exclude: true },
         response_format: { type: "json_object" },
         stream,
         ...(stream ? { stream_options: { include_usage: true } } : {}),
@@ -580,9 +740,11 @@ Terms:
 Hard rules:
 - Never predict one future. Always surface multiple plausible futures.
 - Treat the output as reflection support, alignment support, and articulation support.
-- Use the user's sector, purpose, assumptions, and the Timestral forecasts as the only project-specific sources.
-- The user's assumptions are human judgement. Take them seriously and combine them with the forecast bands.
-- The input carries Timestral forecasts for the selected sector: 10-90 % bands per measure for the 2-, 5-, and 10-year horizons. They measure what 30 large US firms report about AI in SEC filings, not verified adoption. Use the bands to spread the scenarios across the possibility space; they are not scenario probabilities.
+- Use the user's sector, purpose, assumptions, sectorEvidence, and the Timestral scenario forecasts as the only project-specific sources.
+- The input carries sectorEvidence: how many of the sector's 30 firms disclose each AI business function, risk type, risk subdomain, AI kind, and governance response, early (2023-24) versus late (2025-26), with example passages. Derive driving forces, scenarios, indicators, and implications from this sector's evidence and its changes over time. Name the sector's concrete business functions, risks, and firm types. A driving force or scenario that would fit any sector equally is wrong.
+- The input carries criticalUncertainties: the sector's two quantified drivers, each with the outcomes "accelerating" and "stalling". Scenarios are distinct configurations of these outcomes.
+- The user's assumptions are human judgement. Take them seriously and combine them with the forecasts.
+- Corporate disclosures describe reporting; do not equate them with verified adoption, impacts, incidents or societal outcomes. Projection quantiles concern a measured variable and time point, not scenario probabilities.
 - Do not invent citations, URLs, statistics, or claims of current factual certainty.
 `.trim();
 
@@ -603,15 +765,19 @@ Return JSON:
   ]
 }
 
-Cardinality: exactly 4 influenceFactors and exactly 3 perspectives. Mark the 2 most uncertain driving forces as "high" uncertainty. Keep every string short.`;
+The first 2 influenceFactors are the 2 criticalUncertainties, with their names as labels, uncertainty "high", and the measured history in the rationale. The other 2 come from sectorEvidence (a business function or risk of this sector with its firm counts) or from the user's assumptions, with uncertainty "low" or "medium".
+Perspectives: if the user named stakeholders, return exactly one perspective per named stakeholder (at most 4) and no others; otherwise exactly 3.
+Cardinality: exactly 4 influenceFactors. Keep every string short.`;
 }
 
 function buildHorizonPrompt(years) {
   return `${SHARED_RULES}
 
-Task: given the focal issue, driving forces, and perspectives, produce exactly 2 plausible (not predicted) scenarios for the ${years}-year horizon. The two scenarios must diverge from each other along the uncertainties (the driving forces with high uncertainty).
-Anchor the divergence in the Timestral bands for the ${years}y horizon: one scenario toward the lower part of the band of the most relevant measures, the other toward the upper part.
-If the user's assumptions push a scenario outside a band, keep the assumption and state the reason in outsideBandReason; otherwise leave it empty.
+Task: given the focal issue, driving forces, and perspectives, produce exactly 2 plausible (not predicted) scenarios for the ${years}-year horizon.
+The input carries scenarioForecasts: scenario i (in order) is the configuration of driver outcomes in scenarioForecasts[i].configuration and has its own Timestral forecast, conditioned on that configuration: per series the 10-90 % band and median at the horizon date, and the backtest hit rate. The same scenario index keeps the same configuration across the 2-, 5- and 10-year horizons, so write scenario i as the ${years}-year state of that path.
+Explain the system logic of each scenario with the sector's evidence: which business functions, risks, firm types and actors move, and how the driver outcomes interact. Write each scenario with its own numbers, not those of the other scenario.
+State in "values" the numbers the scenario relies on: 3-4 series_ids from that scenario's forecast. A value inside the 10-90 % band needs no comment. A value outside it, e.g. because of the user's assumptions, needs "outside_band_reason": the mechanism, outside the measured history, that moves the series there.
+Use direct, literal language; avoid slogans and metaphors. The narrative carries the scenario: write it as connected prose, not as a list. Give exactly 1 signal, 1 risk, and 1 open question.
 
 Return JSON:
 {
@@ -619,18 +785,19 @@ Return JSON:
     {
       "title": "short scenario title (max 6 words)",
       "orientation": "adoption|resistance|adaptation|fragmentation|governance|care",
-      "summary": "2-3 sentences describing this plausible future",
+      "summary": "narrative of 150-220 words in 2-3 paragraphs separated by \\n\\n: who acts, what changes in the sector's business functions and risks, how the driver outcomes interact, and what the sector looks like at the horizon",
       "factorIds": ["ids chosen ONLY from the provided influenceFactors"],
       "perspectiveIds": ["ids chosen ONLY from the provided perspectives"],
-      "signals": ["indicator: measure name and the value range this scenario assumes, e.g. \"Share of firms reporting LLM adoption: 0.20-0.35\""],
-      "risks": ["risk"],
-      "openQuestions": ["question for reflection"],
-      "outsideBandReason": "why the user's assumptions place this scenario outside a Timestral band, or empty"
+      "values": [{ "series_id": "id from this scenario's forecast", "value": 0.5, "outside_band_reason": "" }],
+      "signals": ["one observable qualitative indicator that this scenario is unfolding"],
+      "risks": ["one key risk"],
+      "openQuestions": ["one question for reflection"]
     }
   ]
 }
 
-Use 1-3 factorIds and 1-2 perspectiveIds per scenario, referencing the exact ids given. Give 2-3 indicators per scenario. Exactly 2 scenarios.`;
+Use 1-3 factorIds and 1-2 perspectiveIds per scenario, referencing the exact ids given. Exactly 2 scenarios, in the order of scenarioForecasts, with distinct titles.
+Titles: name the concrete state of the sector in the horizon year (actors, business function, risk), max 6 words. Do not use the driver outcome words or their variants: accelerate, accelerating, accelerated, acceleration, stall, stalling, stalled, surge, rapid, rise, rising, escalate, escalating, controlled, contained, amid, driven. Do not reuse a word between the two titles except the sector name.`;
 }
 
 function buildMissionPrompt() {
