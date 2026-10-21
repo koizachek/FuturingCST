@@ -1,0 +1,938 @@
+{
+ "model_id": "mistralai/Timestral-28M",
+ "model_revision": "49b26409ac87b5935539a5d8ffe7f397b720db47",
+ "generated_at": "2026-10-21T20:01:07.141386+00:00",
+ "source": "scenarioGPT data/ai-disclosure-panel/series_CKL_records.json (SEC 10-K/10-Q AI disclosures, 30 US firms per sector, 2023Q1-2026Q2)",
+ "horizons": {
+  "2": 2028,
+  "5": 2031,
+  "10": 2036
+ },
+ "interval": {
+  "lower": 0.1,
+  "upper": 0.9
+ },
+ "sectors": {
+  "manufacturing": [
+   {
+    "id": "series-C-ai_passages_per_filing",
+    "name": "Manufacturing: AI passages per firm",
+    "unit": "passages per firm",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 14.03
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 11.224489212036133,
+      "median": 18.94681167602539,
+      "upper": 28.401939392089844
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 8.021661758422852,
+      "median": 23.35693359375,
+      "upper": 45.972023010253906
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.0,
+      "median": 29.24904441833496,
+      "upper": 83.8839111328125
+     }
+    },
+    "diagnostics": [
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   },
+   {
+    "id": "series-C-share_ai_mention",
+    "name": "Manufacturing: Share of firms mentioning AI",
+    "unit": "share of firms (0-1)",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 1.0
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 0.8310478329658508,
+      "median": 1.0,
+      "upper": 1.0
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 0.6364978551864624,
+      "median": 1.0,
+      "upper": 1.0
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.3653697669506073,
+      "median": 1.0,
+      "upper": 1.0
+     }
+    },
+    "diagnostics": [
+     "Quantiles of 'Manufacturing: Share of firms mentioning AI' beyond its bounds (0.0 to 1.0) are set to the bound.",
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   },
+   {
+    "id": "series-C-share_adoption",
+    "name": "Manufacturing: Share of firms reporting AI adoption",
+    "unit": "share of firms (0-1)",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 0.8333
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 0.5322026014328003,
+      "median": 1.0,
+      "upper": 1.0
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 0.28612732887268066,
+      "median": 1.0,
+      "upper": 1.0
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.0,
+      "median": 1.0,
+      "upper": 1.0
+     }
+    },
+    "diagnostics": [
+     "Quantiles of 'Manufacturing: Share of firms reporting AI adoption' beyond its bounds (0.0 to 1.0) are set to the bound.",
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   },
+   {
+    "id": "series-C-share_llm_adoption",
+    "name": "Manufacturing: Share of firms reporting LLM adoption",
+    "unit": "share of firms (0-1)",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 0.3
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 0.018901634961366653,
+      "median": 0.2950097322463989,
+      "upper": 0.7702990770339966
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 0.0,
+      "median": 0.276604026556015,
+      "upper": 1.0
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.0,
+      "median": 0.28015780448913574,
+      "upper": 1.0
+     }
+    },
+    "diagnostics": [
+     "Quantiles of 'Manufacturing: Share of firms reporting LLM adoption' beyond its bounds (0.0 to 1.0) are set to the bound.",
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   },
+   {
+    "id": "series-C-share_vendor",
+    "name": "Manufacturing: Share of firms naming an AI vendor",
+    "unit": "share of firms (0-1)",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 0.4
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 0.27892324328422546,
+      "median": 0.39782392978668213,
+      "upper": 0.43336984515190125
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 0.277671217918396,
+      "median": 0.39755240082740784,
+      "upper": 0.4545101523399353
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.23105300962924957,
+      "median": 0.396149218082428,
+      "upper": 0.5539716482162476
+     }
+    },
+    "diagnostics": [
+     "Quantiles of 'Manufacturing: Share of firms naming an AI vendor' beyond its bounds (0.0 to 1.0) are set to the bound.",
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   },
+   {
+    "id": "series-C-share_risk",
+    "name": "Manufacturing: Share of firms reporting AI risk",
+    "unit": "share of firms (0-1)",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 0.9667
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 0.6971234083175659,
+      "median": 1.0,
+      "upper": 1.0
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 0.42549654841423035,
+      "median": 1.0,
+      "upper": 1.0
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.07856673002243042,
+      "median": 0.9804274439811707,
+      "upper": 1.0
+     }
+    },
+    "diagnostics": [
+     "Quantiles of 'Manufacturing: Share of firms reporting AI risk' beyond its bounds (0.0 to 1.0) are set to the bound.",
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   },
+   {
+    "id": "series-C-share_cyber_risk",
+    "name": "Manufacturing: Share of firms reporting AI cyber risk",
+    "unit": "share of firms (0-1)",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 0.9
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 0.5655245780944824,
+      "median": 0.9125885963439941,
+      "upper": 1.0
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 0.38259559869766235,
+      "median": 0.9201194047927856,
+      "upper": 1.0
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.0,
+      "median": 0.8663898706436157,
+      "upper": 1.0
+     }
+    },
+    "diagnostics": [
+     "Quantiles of 'Manufacturing: Share of firms reporting AI cyber risk' beyond its bounds (0.0 to 1.0) are set to the bound.",
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   },
+   {
+    "id": "series-C-share_regulatory_risk",
+    "name": "Manufacturing: Share of firms reporting AI regulatory risk",
+    "unit": "share of firms (0-1)",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 0.8333
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 0.6204865574836731,
+      "median": 0.8696391582489014,
+      "upper": 1.0
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 0.3250073492527008,
+      "median": 0.8553667068481445,
+      "upper": 1.0
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.0077734291553497314,
+      "median": 0.8284000754356384,
+      "upper": 1.0
+     }
+    },
+    "diagnostics": [
+     "Quantiles of 'Manufacturing: Share of firms reporting AI regulatory risk' beyond its bounds (0.0 to 1.0) are set to the bound.",
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   },
+   {
+    "id": "series-C-share_specific",
+    "name": "Manufacturing: Share of firms with specific AI disclosure",
+    "unit": "share of firms (0-1)",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 0.9333
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 0.7813204526901245,
+      "median": 1.0,
+      "upper": 1.0
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 0.6382184624671936,
+      "median": 1.0,
+      "upper": 1.0
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.29523029923439026,
+      "median": 1.0,
+      "upper": 1.0
+     }
+    },
+    "diagnostics": [
+     "Quantiles of 'Manufacturing: Share of firms with specific AI disclosure' beyond its bounds (0.0 to 1.0) are set to the bound.",
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   }
+  ],
+  "it": [
+   {
+    "id": "series-K-ai_passages_per_filing",
+    "name": "Software, IT and telecommunications: AI passages per firm",
+    "unit": "passages per firm",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 33.7
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 22.256610870361328,
+      "median": 40.81553649902344,
+      "upper": 64.02304077148438
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 12.820837020874023,
+      "median": 45.9821891784668,
+      "upper": 101.0802001953125
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.0,
+      "median": 51.74082565307617,
+      "upper": 184.619873046875
+     }
+    },
+    "diagnostics": [
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   },
+   {
+    "id": "series-K-share_ai_mention",
+    "name": "Software, IT and telecommunications: Share of firms mentioning AI",
+    "unit": "share of firms (0-1)",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 1.0
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 0.8472340106964111,
+      "median": 0.9999228715896606,
+      "upper": 1.0
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 0.96360182762146,
+      "median": 0.9997497200965881,
+      "upper": 1.0
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.9170457720756531,
+      "median": 1.0,
+      "upper": 1.0
+     }
+    },
+    "diagnostics": [
+     "Quantiles of 'Software, IT and telecommunications: Share of firms mentioning AI' beyond its bounds (0.0 to 1.0) are set to the bound.",
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   },
+   {
+    "id": "series-K-share_adoption",
+    "name": "Software, IT and telecommunications: Share of firms reporting AI adoption",
+    "unit": "share of firms (0-1)",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 0.9667
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 0.7913978099822998,
+      "median": 0.9811739921569824,
+      "upper": 1.0
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 0.5743336081504822,
+      "median": 0.9694712162017822,
+      "upper": 1.0
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.36084696650505066,
+      "median": 0.9425582885742188,
+      "upper": 1.0
+     }
+    },
+    "diagnostics": [
+     "Quantiles of 'Software, IT and telecommunications: Share of firms reporting AI adoption' beyond its bounds (0.0 to 1.0) are set to the bound.",
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   },
+   {
+    "id": "series-K-share_llm_adoption",
+    "name": "Software, IT and telecommunications: Share of firms reporting LLM adoption",
+    "unit": "share of firms (0-1)",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 0.6333
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 0.1903325468301773,
+      "median": 0.6364822387695312,
+      "upper": 1.0
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 0.0,
+      "median": 0.6271883249282837,
+      "upper": 1.0
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.0,
+      "median": 0.6306986808776855,
+      "upper": 1.0
+     }
+    },
+    "diagnostics": [
+     "Quantiles of 'Software, IT and telecommunications: Share of firms reporting LLM adoption' beyond its bounds (0.0 to 1.0) are set to the bound.",
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   },
+   {
+    "id": "series-K-share_vendor",
+    "name": "Software, IT and telecommunications: Share of firms naming an AI vendor",
+    "unit": "share of firms (0-1)",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 0.9
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 0.6710681915283203,
+      "median": 0.9343647956848145,
+      "upper": 1.0
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 0.528252899646759,
+      "median": 0.9461402893066406,
+      "upper": 1.0
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.24417969584465027,
+      "median": 0.9655216932296753,
+      "upper": 1.0
+     }
+    },
+    "diagnostics": [
+     "Quantiles of 'Software, IT and telecommunications: Share of firms naming an AI vendor' beyond its bounds (0.0 to 1.0) are set to the bound.",
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   },
+   {
+    "id": "series-K-share_risk",
+    "name": "Software, IT and telecommunications: Share of firms reporting AI risk",
+    "unit": "share of firms (0-1)",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 1.0
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 0.802822470664978,
+      "median": 0.999849796295166,
+      "upper": 1.0
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 0.9507029056549072,
+      "median": 0.9996851682662964,
+      "upper": 1.0
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.891898512840271,
+      "median": 1.0,
+      "upper": 1.0
+     }
+    },
+    "diagnostics": [
+     "Quantiles of 'Software, IT and telecommunications: Share of firms reporting AI risk' beyond its bounds (0.0 to 1.0) are set to the bound.",
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   },
+   {
+    "id": "series-K-share_cyber_risk",
+    "name": "Software, IT and telecommunications: Share of firms reporting AI cyber risk",
+    "unit": "share of firms (0-1)",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 0.9667
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 0.572580099105835,
+      "median": 1.0,
+      "upper": 1.0
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 0.26209259033203125,
+      "median": 1.0,
+      "upper": 1.0
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.0,
+      "median": 1.0,
+      "upper": 1.0
+     }
+    },
+    "diagnostics": [
+     "Quantiles of 'Software, IT and telecommunications: Share of firms reporting AI cyber risk' beyond its bounds (0.0 to 1.0) are set to the bound.",
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   },
+   {
+    "id": "series-K-share_regulatory_risk",
+    "name": "Software, IT and telecommunications: Share of firms reporting AI regulatory risk",
+    "unit": "share of firms (0-1)",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 1.0
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 0.8997508883476257,
+      "median": 1.0,
+      "upper": 1.0
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 0.7576149702072144,
+      "median": 1.0,
+      "upper": 1.0
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.585518479347229,
+      "median": 1.0,
+      "upper": 1.0
+     }
+    },
+    "diagnostics": [
+     "Quantiles of 'Software, IT and telecommunications: Share of firms reporting AI regulatory risk' beyond its bounds (0.0 to 1.0) are set to the bound.",
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   },
+   {
+    "id": "series-K-share_specific",
+    "name": "Software, IT and telecommunications: Share of firms with specific AI disclosure",
+    "unit": "share of firms (0-1)",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 0.9667
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 0.8758402466773987,
+      "median": 0.9663051962852478,
+      "upper": 1.0
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 0.808867335319519,
+      "median": 0.9671902656555176,
+      "upper": 1.0
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.6996070146560669,
+      "median": 0.9683308601379395,
+      "upper": 1.0
+     }
+    },
+    "diagnostics": [
+     "Quantiles of 'Software, IT and telecommunications: Share of firms with specific AI disclosure' beyond its bounds (0.0 to 1.0) are set to the bound.",
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   }
+  ],
+  "banking": [
+   {
+    "id": "series-L-ai_passages_per_filing",
+    "name": "Finance and insurance: AI passages per firm",
+    "unit": "passages per firm",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 12.9
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 10.194080352783203,
+      "median": 18.112445831298828,
+      "upper": 26.603404998779297
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 6.362970352172852,
+      "median": 22.86094093322754,
+      "upper": 43.75434875488281
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.0,
+      "median": 29.049449920654297,
+      "upper": 79.64437866210938
+     }
+    },
+    "diagnostics": [
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   },
+   {
+    "id": "series-L-share_ai_mention",
+    "name": "Finance and insurance: Share of firms mentioning AI",
+    "unit": "share of firms (0-1)",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 1.0
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 0.8178293704986572,
+      "median": 1.0,
+      "upper": 1.0
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 0.6430445909500122,
+      "median": 1.0,
+      "upper": 1.0
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.15347108244895935,
+      "median": 1.0,
+      "upper": 1.0
+     }
+    },
+    "diagnostics": [
+     "Quantiles of 'Finance and insurance: Share of firms mentioning AI' beyond its bounds (0.0 to 1.0) are set to the bound.",
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   },
+   {
+    "id": "series-L-share_adoption",
+    "name": "Finance and insurance: Share of firms reporting AI adoption",
+    "unit": "share of firms (0-1)",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 0.8667
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 0.3015265166759491,
+      "median": 0.8751120567321777,
+      "upper": 1.0
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 0.0,
+      "median": 0.8787664175033569,
+      "upper": 1.0
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.0,
+      "median": 0.8789106607437134,
+      "upper": 1.0
+     }
+    },
+    "diagnostics": [
+     "Quantiles of 'Finance and insurance: Share of firms reporting AI adoption' beyond its bounds (0.0 to 1.0) are set to the bound.",
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   },
+   {
+    "id": "series-L-share_llm_adoption",
+    "name": "Finance and insurance: Share of firms reporting LLM adoption",
+    "unit": "share of firms (0-1)",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 0.5333
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 0.3344078063964844,
+      "median": 0.5443496704101562,
+      "upper": 0.6590355634689331
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 0.14261384308338165,
+      "median": 0.5405685901641846,
+      "upper": 0.8596786856651306
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.0,
+      "median": 0.4992755055427551,
+      "upper": 1.0
+     }
+    },
+    "diagnostics": [
+     "Quantiles of 'Finance and insurance: Share of firms reporting LLM adoption' beyond its bounds (0.0 to 1.0) are set to the bound.",
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   },
+   {
+    "id": "series-L-share_vendor",
+    "name": "Finance and insurance: Share of firms naming an AI vendor",
+    "unit": "share of firms (0-1)",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 0.5667
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 0.3776881694793701,
+      "median": 0.5671520233154297,
+      "upper": 0.7086823582649231
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 0.28900307416915894,
+      "median": 0.5565164089202881,
+      "upper": 0.9141255021095276
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.12354922294616699,
+      "median": 0.5329306125640869,
+      "upper": 1.0
+     }
+    },
+    "diagnostics": [
+     "Quantiles of 'Finance and insurance: Share of firms naming an AI vendor' beyond its bounds (0.0 to 1.0) are set to the bound.",
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   },
+   {
+    "id": "series-L-share_risk",
+    "name": "Finance and insurance: Share of firms reporting AI risk",
+    "unit": "share of firms (0-1)",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 0.9667
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 0.4225933849811554,
+      "median": 0.9643837213516235,
+      "upper": 1.0
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 0.3104124963283539,
+      "median": 0.9663684368133545,
+      "upper": 1.0
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.17436754703521729,
+      "median": 0.9560546875,
+      "upper": 1.0
+     }
+    },
+    "diagnostics": [
+     "Quantiles of 'Finance and insurance: Share of firms reporting AI risk' beyond its bounds (0.0 to 1.0) are set to the bound.",
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   },
+   {
+    "id": "series-L-share_cyber_risk",
+    "name": "Finance and insurance: Share of firms reporting AI cyber risk",
+    "unit": "share of firms (0-1)",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 0.8667
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 0.44734156131744385,
+      "median": 0.9778375029563904,
+      "upper": 1.0
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 0.13904130458831787,
+      "median": 1.0,
+      "upper": 1.0
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.0,
+      "median": 1.0,
+      "upper": 1.0
+     }
+    },
+    "diagnostics": [
+     "Quantiles of 'Finance and insurance: Share of firms reporting AI cyber risk' beyond its bounds (0.0 to 1.0) are set to the bound.",
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   },
+   {
+    "id": "series-L-share_regulatory_risk",
+    "name": "Finance and insurance: Share of firms reporting AI regulatory risk",
+    "unit": "share of firms (0-1)",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 0.9
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 0.6709463596343994,
+      "median": 1.0,
+      "upper": 1.0
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 0.41573914885520935,
+      "median": 1.0,
+      "upper": 1.0
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.007283121347427368,
+      "median": 1.0,
+      "upper": 1.0
+     }
+    },
+    "diagnostics": [
+     "Quantiles of 'Finance and insurance: Share of firms reporting AI regulatory risk' beyond its bounds (0.0 to 1.0) are set to the bound.",
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   },
+   {
+    "id": "series-L-share_specific",
+    "name": "Finance and insurance: Share of firms with specific AI disclosure",
+    "unit": "share of firms (0-1)",
+    "last_observed": {
+     "date": "2026-06-30",
+     "value": 0.9667
+    },
+    "by_horizon": {
+     "2": {
+      "date": "2028-12-31",
+      "lower": 0.6171426773071289,
+      "median": 1.0,
+      "upper": 1.0
+     },
+     "5": {
+      "date": "2031-12-31",
+      "lower": 0.3611218333244324,
+      "median": 1.0,
+      "upper": 1.0
+     },
+     "10": {
+      "date": "2036-12-31",
+      "lower": 0.0,
+      "median": 1.0,
+      "upper": 1.0
+     }
+    },
+    "diagnostics": [
+     "Quantiles of 'Finance and insurance: Share of firms with specific AI disclosure' beyond its bounds (0.0 to 1.0) are set to the bound.",
+     "The forecast continues 14 observations over 42 steps. Read it as a continuation of the observed history under the stated assumptions.",
+     "This series measures company reporting, not independently verified adoption or incidents."
+    ]
+   }
+  ]
+ }
+}

@@ -26,15 +26,27 @@
           <span class="brand-mark"></span>
           <div>
             <h1>FuturingCST</h1>
-            <p>A creativity support tool for reflective multi-horizon futuring</p>
+            <p>A strategy support tool for reflective multi-horizon futuring</p>
           </div>
           <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Switch color theme">LIGHT</button>
         </div>
 
         <form id="futuring-form" class="input-stack">
+          <div class="sector-tabs" role="radiogroup" aria-label="Sector">
+            <label><input type="radio" name="sector" value="manufacturing" checked><span>Manufacturing</span></label>
+            <label><input type="radio" name="sector" value="banking"><span>Banking</span></label>
+            <label><input type="radio" name="sector" value="it"><span>IT</span></label>
+          </div>
+
           <label>
             <span>Purpose</span>
-            <textarea id="purpose" name="purpose" rows="4" required placeholder="What is the prototype meant to make possible?"></textarea>
+            <select id="purpose-choice">
+              <option>How will LLM adoption in this sector develop over the next 2, 5, and 10 years?</option>
+              <option>How will dependence on AI vendors in this sector develop?</option>
+              <option>Which futures are possible if almost all firms report AI risks, but only some deploy LLMs?</option>
+              <option value="other">Other</option>
+            </select>
+            <textarea id="purpose" name="purpose" rows="4" required hidden placeholder="Formulate your own question."></textarea>
           </label>
 
           <label>

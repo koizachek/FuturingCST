@@ -13,6 +13,8 @@ const port = Number(process.env.PORT || 5173);
 const host = process.env.HOST || "0.0.0.0";
 
 const HORIZON_YEARS = [2, 5, 10];
+const SECTORS = { manufacturing: "Manufacturing", banking: "Banking (finance and insurance)", it: "IT (software, IT and telecommunications)" };
+const forecasts = JSON.parse(fs.readFileSync(path.join(__dirname, "data", "timestral_forecasts.json"), "utf8"));
 const RATE_LIMIT_WINDOW_MS = Number(process.env.RATE_LIMIT_WINDOW_MS || 3600000);
 const rateBuckets = new Map();
 
@@ -320,7 +322,25 @@ function sanitizeInput(input) {
     throw error;
   }
 
-  return { purpose, context, stakeholders, signals };
+  const sector = Object.hasOwn(SECTORS, input.sector) ? input.sector : "manufacturing";
+  return { purpose, context, stakeholders, signals, sector: SECTORS[sector], timestral: sectorForecast(sector) };
+}
+
+// Timestral 10-90 % bands per measure and horizon, precomputed from the scenarioGPT data
+function sectorForecast(sector) {
+  const round = (value) => Math.round(value * 1000) / 1000;
+  return {
+    model: forecasts.model_id,
+    source: forecasts.source,
+    measures: forecasts.sectors[sector].map((series) => ({
+      name: series.name,
+      unit: series.unit,
+      lastObserved: { date: series.last_observed.date, value: round(series.last_observed.value) },
+      byHorizon: Object.fromEntries(Object.entries(series.by_horizon).map(([years, band]) => [
+        `${years}y`, { date: band.date, lower: round(band.lower), median: round(band.median), upper: round(band.upper) }
+      ]))
+    }))
+  };
 }
 
 function stringField(value, maxLength) {
@@ -356,6 +376,7 @@ function sanitizeProjectContext(project = {}) {
   return {
     title: stringField(project.title, 120),
     reading: stringField(project.reading, 360),
+    sector: stringField(input.sector, 80),
     purpose: stringField(input.purpose, 600),
     context: stringField(input.context, 700),
     stakeholders: stringField(input.stakeholders, 360),
@@ -550,7 +571,8 @@ Return only valid JSON. Do not include markdown.
 Hard rules:
 - Never predict one future. Always surface multiple plausible futures.
 - Treat the output as reflection support, alignment support, and articulation support.
-- Use the user's purpose and context as the only project-specific source.
+- Use the user's sector, purpose, and context as the only project-specific source.
+- The input carries Timestral forecasts for the selected sector: 10-90 % bands per measure for the 2-, 5-, and 10-year horizons. They measure what 30 large US firms report about AI in SEC filings, not verified adoption. Use the bands to spread the scenarios across the possibility space; they are not scenario probabilities.
 - Do not invent citations, URLs, statistics, or claims of current factual certainty.
 `.trim();
 

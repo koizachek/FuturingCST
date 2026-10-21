@@ -10,6 +10,18 @@ const cursor = document.querySelector("#cursor");
 const themeToggle = document.querySelector("#theme-toggle");
 const mobileResults = document.querySelector("#mobile-results");
 const mobileMedia = window.matchMedia("(max-width: 760px)");
+const purposeChoice = document.querySelector("#purpose-choice");
+const purposeInput = document.querySelector("#purpose");
+
+// a suggested question fills the purpose field; "other" lets the user write their own
+function syncPurpose() {
+  const own = purposeChoice.value === "other";
+  purposeInput.hidden = !own;
+  purposeInput.value = own ? "" : purposeChoice.value;
+  if (own) purposeInput.focus();
+}
+purposeChoice.addEventListener("change", syncPurpose);
+syncPurpose();
 
 let graph = emptyGraph();
 let latestData = null;
@@ -566,7 +578,7 @@ function drawChartFrame(width, height) {
 function drawScaffold(width, height) {
   if (!graph.nodes.length) return;
   ctx.save();
-  ctx.font = "10px 'Space Mono', ui-monospace, monospace";
+  ctx.font = "12px 'Space Mono', ui-monospace, monospace";
   ctx.textBaseline = "top";
 
   // divider between the frame zone and the horizon zone
@@ -678,8 +690,8 @@ function drawLabel(node, color, progress, active) {
   const text = truncate(node.label || node.id, labelMax[node.type] || 22);
   const coord = active ? `${node.nx.toFixed(2)} / ${node.ny.toFixed(2)}` : "";
 
-  const tagFont = "9px 'Space Mono', ui-monospace, monospace";
-  const textFont = "12px 'Space Mono', ui-monospace, monospace";
+  const tagFont = "11px 'Space Mono', ui-monospace, monospace";
+  const textFont = "14px 'Space Mono', ui-monospace, monospace";
   let metrics = node.labelMetrics;
   if (!metrics) {
     ctx.font = tagFont;
@@ -691,7 +703,7 @@ function drawLabel(node, color, progress, active) {
     if (fontsLoaded) node.labelMetrics = metrics;
   }
   const blockW = Math.max(metrics.tagW, metrics.textW, coord ? 70 : 0) + 12;
-  const blockH = coord ? 44 : 32;
+  const blockH = coord ? 50 : 36;
 
   const pad = node.r + 8;
   const width = canvas.clientWidth;
@@ -739,14 +751,14 @@ function drawLabel(node, color, progress, active) {
   ctx.textAlign = "left";
   ctx.fillStyle = active ? theme.labelTagActive : theme.labelTag;
   ctx.font = tagFont;
-  ctx.fillText(tag, tx, by + 12);
+  ctx.fillText(tag, tx, by + 13);
   ctx.fillStyle = active ? theme.labelTextActive : theme.labelText;
   ctx.font = textFont;
-  ctx.fillText(text, tx, by + 25);
+  ctx.fillText(text, tx, by + 29);
   if (coord) {
     ctx.fillStyle = theme.labelCoord;
     ctx.font = tagFont;
-    ctx.fillText(coord, tx, by + 38);
+    ctx.fillText(coord, tx, by + 44);
   }
 }
 
@@ -760,10 +772,10 @@ function drawLegend(width, height) {
     ["mission", "Mission step"]
   ];
   ctx.save();
-  ctx.font = "10px 'Space Mono', ui-monospace, monospace";
+  ctx.font = "12px 'Space Mono', ui-monospace, monospace";
   ctx.textBaseline = "middle";
   const x = 16;
-  let y = height - 16 - items.length * 16;
+  let y = height - 18 - items.length * 18;
   for (const [type, label] of items) {
     ctx.fillStyle = theme.palette[type];
     ctx.shadowColor = theme.palette[type];
@@ -774,7 +786,7 @@ function drawLegend(width, height) {
     ctx.shadowBlur = 0;
     ctx.fillStyle = theme.legendText;
     ctx.fillText(label, x + 10, y);
-    y += 16;
+    y += 18;
   }
   ctx.restore();
 }
